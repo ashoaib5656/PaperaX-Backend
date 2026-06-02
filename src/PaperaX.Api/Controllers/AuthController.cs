@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Mvc;
 using PaperaX.Application.Common.Models;
 using PaperaX.Application.Features.Auth.DTOs;
 using PaperaX.Application.Features.Auth.Interfaces;
-using System;
 using System.Threading.Tasks;
 
 namespace PaperaX.Api.Controllers
@@ -27,18 +26,9 @@ namespace PaperaX.Api.Controllers
                 return BadRequest(errorResponse);
             }
 
-            try
-            {
-                var response = await _authService.GoogleLoginAsync(request.IdToken);
-                var successResponse = ApiResponse<AuthResponse>.Success(response, "Login successful");
-                return Ok(successResponse);
-            }
-            catch (Exception ex)
-            {
-                // In a production app, log the exception here
-                var errorResponse = ApiResponse<AuthResponse>.Failure(ex.Message, "Authentication failed");
-                return Unauthorized(errorResponse);
-            }
+            var response = await _authService.GoogleLoginAsync(request.IdToken);
+            var successResponse = ApiResponse<AuthResponse>.Success(response, "Login successful");
+            return Ok(successResponse);
         }
 
         [HttpPost("send-otp")]
@@ -50,18 +40,9 @@ namespace PaperaX.Api.Controllers
                 return BadRequest(errorResponse);
             }
 
-            try
-            {
-                await _authService.SendOtpAsync(request.Email);
-                var successResponse = ApiResponse<string>.Success(null, "OTP sent successfully");
-                return Ok(successResponse);
-            }
-            catch (Exception ex)
-            {
-                // In a production app, log the exception here
-                var errorResponse = ApiResponse<string>.Failure(ex.Message, "Failed to send OTP");
-                return StatusCode(500, errorResponse);
-            }
+            await _authService.SendOtpAsync(request.Email);
+            var successResponse = ApiResponse<string>.Success(null, "OTP sent successfully");
+            return Ok(successResponse);
         }
 
         [HttpPost("verify-otp")]
@@ -73,25 +54,16 @@ namespace PaperaX.Api.Controllers
                 return BadRequest(errorResponse);
             }
 
-            try
+            var isValid = await _authService.VerifyOtpAsync(request.Email, request.Otp);
+            if (isValid)
             {
-                var isValid = await _authService.VerifyOtpAsync(request.Email, request.Otp);
-                if (isValid)
-                {
-                    var successResponse = ApiResponse<string>.Success(null, "OTP verified successfully");
-                    return Ok(successResponse);
-                }
-                else
-                {
-                    var errorResponse = ApiResponse<string>.Failure("Invalid OTP", "Verification failed");
-                    return Unauthorized(errorResponse);
-                }
+                var successResponse = ApiResponse<string>.Success(null, "OTP verified successfully");
+                return Ok(successResponse);
             }
-            catch (Exception ex)
+            else
             {
-                // In a production app, log the exception here
-                var errorResponse = ApiResponse<string>.Failure(ex.Message, "Failed to verify OTP");
-                return StatusCode(500, errorResponse);
+                var errorResponse = ApiResponse<string>.Failure("Invalid OTP", "Verification failed");
+                return Unauthorized(errorResponse);
             }
         }
 
@@ -104,18 +76,23 @@ namespace PaperaX.Api.Controllers
                 return BadRequest(errorResponse);
             }
 
-            try
+            var response = await _authService.RegisterAsync(request);
+            var successResponse = ApiResponse<AuthResponse>.Success(response, "Registration successful");
+            return Ok(successResponse);
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+        {
+            if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Password))
             {
-                var response = await _authService.RegisterAsync(request);
-                var successResponse = ApiResponse<AuthResponse>.Success(response, "Registration successful");
-                return Ok(successResponse);
+                var errorResponse = ApiResponse<AuthResponse>.Failure("Email and Password are required", "Invalid Request");
+                return BadRequest(errorResponse);
             }
-            catch (Exception ex)
-            {
-                // In a production app, log the exception here
-                var errorResponse = ApiResponse<AuthResponse>.Failure(ex.Message, "Registration failed");
-                return StatusCode(500, errorResponse);
-            }
+
+            var response = await _authService.ResetPasswordAsync(request);
+            var successResponse = ApiResponse<AuthResponse>.Success(response, "Password reset successfully");
+            return Ok(successResponse);
         }
 
         [HttpPost("login")]
@@ -123,22 +100,13 @@ namespace PaperaX.Api.Controllers
         {
             if(string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Password))
             {
-                var erorResponse = ApiResponse<AuthResponse>.Failure("Email and Password are required", "Invalid Request");
-                return BadRequest(erorResponse);
+                var errorResponse = ApiResponse<AuthResponse>.Failure("Email and Password are required", "Invalid Request");
+                return BadRequest(errorResponse);
             }
 
-            try
-            {
-                var response = await _authService.LoginAsync(request.Email, request.Password);
-                var successResponse = ApiResponse<AuthResponse>.Success(response, "Login successful");
-                return Ok(successResponse);
-            }
-
-            catch (Exception ex)
-            {
-               // In a production app, log the exception here
-                var errorResponse = ApiResponse<AuthResponse>.Failure(ex.Message, "Authentication failed");
-                return Unauthorized(errorResponse);}
+            var response = await _authService.LoginAsync(request.Email, request.Password);
+            var successResponse = ApiResponse<AuthResponse>.Success(response, "Login successful");
+            return Ok(successResponse);
         }
     }
 }

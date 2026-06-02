@@ -14,5 +14,6 @@ namespace PaperaX.Application.Features.Auth.Interfaces
         Task<AuthResponse> RegisterAsync(RegisterRequest request);
         Task<AuthResponse> LoginAsync(string email, string password);
         Task<AuthResponse> GoogleLoginAsync(string idToken);
+        Task<AuthResponse> ResetPasswordAsync(ResetPasswordRequest request);
     }
 }

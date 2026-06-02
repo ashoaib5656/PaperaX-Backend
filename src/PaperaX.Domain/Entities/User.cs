@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,7 +16,7 @@ namespace PaperaX.Domain.Entities
         public bool IsEmailVerified { get; set; }
         public string Role { get; set; } = string.Empty;
         public string? RefreshToken { get; set; }
-        public string? RefreshTokenExpiryTime { get; set; }
+        public DateTime? RefreshTokenExpiryTime { get; set; }
         public DateTime CreatedAt { get; set; }
 
     }

@@ -1,11 +1,10 @@
 using System;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using PaperaX.Application.Features.Auth.DTOs;
 using PaperaX.Application.Features.Auth.Interfaces;
+using PaperaX.Application.Interfaces;
 using PaperaX.Domain.Entities;
-using PaperaX.Infrastructure.Persistence;
 using PaperaX.Infrastructure.Redis;
 using BCrypt.Net;
 
@@ -15,20 +14,20 @@ namespace PaperaX.Infrastructure.Authentication
     {
         private readonly IGoogleAuthService _googleAuthService;
         private readonly IJwtTokenGenerator _jwtTokenGenerator;
-        private readonly ApplicationDbContext _dbContext;
+        private readonly IUserRepository _userRepository;
         private readonly IEmailService _emailService;
         private readonly OtpRedisService _otpRedisService;
 
         public AuthService(
             IGoogleAuthService googleAuthService,
             IJwtTokenGenerator jwtTokenGenerator,
-            ApplicationDbContext dbContext,
+            IUserRepository userRepository,
             IEmailService emailService,
             OtpRedisService otpRedisService)
         {
             _googleAuthService = googleAuthService;
             _jwtTokenGenerator = jwtTokenGenerator;
-            _dbContext = dbContext;
+            _userRepository = userRepository;
             _emailService = emailService;
             _otpRedisService = otpRedisService;
         }
@@ -76,7 +75,7 @@ namespace PaperaX.Infrastructure.Authentication
             }
 
             // Check if user already exists
-            var existingUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+            var existingUser = await _userRepository.GetByEmailAsync(request.Email);
             if (existingUser != null)
             {
                 throw new InvalidOperationException("User with this email already exists.");
@@ -95,8 +94,7 @@ namespace PaperaX.Infrastructure.Authentication
                 CreatedAt = DateTime.UtcNow
             };
 
-            _dbContext.Users.Add(user);
-            await _dbContext.SaveChangesAsync();
+            await _userRepository.AddAsync(user);
 
             // Generate authentication tokens
             var accessToken = _jwtTokenGenerator.GenerateToken(user);
@@ -104,8 +102,8 @@ namespace PaperaX.Infrastructure.Authentication
 
             // Save Refresh Token
             user.RefreshToken = refreshToken;
-            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7).ToString("o");
-            await _dbContext.SaveChangesAsync();
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+            await _userRepository.UpdateAsync(user);
 
             return new AuthResponse
             {
@@ -125,7 +123,7 @@ namespace PaperaX.Infrastructure.Authentication
                 throw new ArgumentException("Email and password are required.");
             }
 
-            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == email);
+            var user = await _userRepository.GetByEmailAsync(email);
             if (user == null)
             {
                 throw new UnauthorizedAccessException("Invalid email or password.");
@@ -144,8 +142,8 @@ namespace PaperaX.Infrastructure.Authentication
 
             // Save Refresh Token
             user.RefreshToken = refreshToken;
-            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7).ToString("o");
-            await _dbContext.SaveChangesAsync();
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+            await _userRepository.UpdateAsync(user);
 
             return new AuthResponse
             {
@@ -171,7 +169,7 @@ namespace PaperaX.Infrastructure.Authentication
                 throw new UnauthorizedAccessException("Invalid Google Token");
             }
 
-            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == googlePayload.Value.Email);
+            var user = await _userRepository.GetByEmailAsync(googlePayload.Value.Email);
 
             if (user == null)
             {
@@ -186,14 +184,13 @@ namespace PaperaX.Infrastructure.Authentication
                     CreatedAt = DateTime.UtcNow
                 };
 
-                _dbContext.Users.Add(user);
-                await _dbContext.SaveChangesAsync();
+                await _userRepository.AddAsync(user);
             }
             else if (string.IsNullOrEmpty(user.GoogleId))
             {
                 // Link Google authentication to existing email user
                 user.GoogleId = googlePayload.Value.GoogleId;
-                await _dbContext.SaveChangesAsync();
+                await _userRepository.UpdateAsync(user);
             }
 
             // Generate authentication tokens
@@ -202,8 +199,40 @@ namespace PaperaX.Infrastructure.Authentication
 
             // Save Refresh Token
             user.RefreshToken = refreshToken;
-            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7).ToString("o");
-            await _dbContext.SaveChangesAsync();
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+            await _userRepository.UpdateAsync(user);
+
+            return new AuthResponse
+            {
+                UserId = user.Id,
+                FullName = user.FullName,
+                Email = user.Email,
+                Role = user.Role ?? "User",
+                AccessToken = accessToken,
+                RefreshToken = refreshToken
+            };
+        }
+
+        public async Task<AuthResponse> ResetPasswordAsync(ResetPasswordRequest request)
+        {
+            if (request == null)
+                throw new ArgumentNullException(nameof(request));
+
+            var user = await _userRepository.GetByEmailAsync(request.Email)
+                ?? throw new InvalidOperationException("User not found.");
+
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
+            user.RefreshToken = null;
+            user.RefreshTokenExpiryTime = null;
+
+            await _userRepository.UpdateAsync(user);
+
+            var accessToken = _jwtTokenGenerator.GenerateToken(user);
+            var refreshToken = _jwtTokenGenerator.GenerateRefreshToken();
+
+            user.RefreshToken = refreshToken;
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+            await _userRepository.UpdateAsync(user);
 
             return new AuthResponse
             {

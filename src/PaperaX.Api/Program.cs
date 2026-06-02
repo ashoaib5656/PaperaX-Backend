@@ -5,8 +5,19 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using PaperaX.Infrastructure.Email;
 using PaperaX.Application.Features.Auth.Interfaces;
+using PaperaX.Infrastructure.Authentication;
+using Serilog;
+using PaperaX.Api.Middleware;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.RateLimiting;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure Serilog
+builder.Host.UseSerilog((context, loggerConfig) =>
+    loggerConfig.ReadFrom.Configuration(context.Configuration)
+                .WriteTo.Console());
 
 // Add User Secrets in Development
 if (builder.Environment.IsDevelopment())
@@ -14,30 +25,36 @@ if (builder.Environment.IsDevelopment())
     builder.Configuration.AddUserSecrets<Program>();
 }
 
-// Validate required configuration on startup
-var requiredSettings = new[]
-{
-    "ConnectionStrings:DefaultConnection",
-    "Redis:ConnectionString",
-    "JwtSettings:Secret",
-    "GoogleAuthSettings:ClientId",
-    "GoogleAuthSettings:ClientSecret",
-    "EmailSettings:FromEmail",
-    "EmailSettings:SmtpServer",
-    "EmailSettings:SmtpUsername",
-    "EmailSettings:SmtpPassword"
-};
+// ---------------------------
+// Configuration / Options Binding
+// ---------------------------
+builder.Services.AddOptions<JwtSettings>()
+    .BindConfiguration("JwtSettings")
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
 
-foreach (var setting in requiredSettings)
-{
-    if (string.IsNullOrEmpty(builder.Configuration[setting]))
-    {
-        throw new InvalidOperationException(
-            $"Missing required configuration: {setting}. Set it via environment variables, User Secrets, or appsettings.");
-    }
-}
+builder.Services.AddOptions<GoogleAuthSettings>()
+    .BindConfiguration("GoogleAuthSettings")
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
 
+builder.Services.AddOptions<RedisSettings>()
+    .BindConfiguration("Redis")
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+
+builder.Services.AddOptions<EmailSettings>()
+    .BindConfiguration("EmailSettings")
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+
+// ---------------------------
 // Add services to the container.
+// ---------------------------
+
+// Global Exception Handler
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 builder.Services.AddCors(options =>
 {
@@ -51,41 +68,54 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddControllers();
 
-// DbContext
-
+// DbContext (with Resilience)
 builder.Services.AddDbContext<PaperaX.Infrastructure.Persistence.ApplicationDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"), 
+        npgsqlOptions => npgsqlOptions.EnableRetryOnFailure(3)));
 
 // Redis Connection
 builder.Services.AddSingleton(sp =>
 {
-    var connectinString = builder.Configuration["Redis:ConnectionString"] ?? "localhost:6379";
-    return new RedisConnection(connectinString);
+    var redisSettings = sp.GetRequiredService<IOptions<RedisSettings>>().Value;
+    return new RedisConnection(redisSettings.ConnectionString);
 });
 
-// JWT
+// JWT Authentication
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer();
 
-var jwtSetting = builder.Configuration.GetSection("JwtSettings");
-
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(option =>
-{
-    option.TokenValidationParameters = new TokenValidationParameters
+builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
+    .Configure<IOptions<JwtSettings>>((options, jwtSettings) =>
     {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = jwtSetting["Issuer"],
-        ValidAudience = jwtSetting["Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSetting["Secret"]!)),
-        ClockSkew = TimeSpan.Zero
-    };
+        var settings = jwtSettings.Value;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = settings.Issuer,
+            ValidAudience = settings.Audience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settings.Secret)),
+            ClockSkew = TimeSpan.Zero
+        };
+    });
 
+
+// Rate Limiting
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("FixedPolicy", opt =>
+    {
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.PermitLimit = 30;
+        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        opt.QueueLimit = 2;
+    });
 });
 
-// SMTP
-builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+// Health Checks
+builder.Services.AddHealthChecks();
 
 // Redis OTP Service
 builder.Services.AddScoped<OtpRedisService>();
@@ -94,16 +124,17 @@ builder.Services.AddScoped<OtpRedisService>();
 builder.Services.AddScoped<PaperaX.Application.Features.Auth.Interfaces.IGoogleAuthService, PaperaX.Infrastructure.Authentication.GoogleAuthService>();
 builder.Services.AddScoped<PaperaX.Application.Features.Auth.Interfaces.IJwtTokenGenerator, PaperaX.Infrastructure.Authentication.JwtTokenGenerator>();
 builder.Services.AddScoped<PaperaX.Application.Features.Auth.Interfaces.IAuthService, PaperaX.Infrastructure.Authentication.AuthService>();
+builder.Services.AddScoped<PaperaX.Application.Interfaces.IUserRepository, PaperaX.Infrastructure.Repositories.UserRepository>();
 
 builder.Services.AddScoped<IEmailService, EmailService>();
-
-
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+app.UseExceptionHandler();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -112,13 +143,18 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseSerilogRequestLogging();
+
 app.UseHttpsRedirection();
 
 app.UseCors("AllowFrontend");
+
+app.UseRateLimiter();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHealthChecks("/health");
 
 app.Run();
