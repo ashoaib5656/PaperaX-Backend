@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,7 +15,9 @@ namespace PaperaX.Domain.Entities
         public int GSM { get; set; }
 
         public int StockQuantity { get; set; }
-        public string Category { get; set; } = string.Empty;
+        public int CategoryId { get; set; }
+        public Category Category { get; set; } = null!;
         public string ImageUrl { get; set; } = string.Empty;
+        public string Status { get; set; } = "In Stock";
     }
 }

@@ -108,5 +108,17 @@ namespace PaperaX.Api.Controllers
             var successResponse = ApiResponse<AuthResponse>.Success(response, "Login successful");
             return Ok(successResponse);
         }
+
+        [HttpPost("check-email")]
+        public async Task<IActionResult> CheckEmail([FromBody] CheckEmailRequest request)
+        {
+            if (string.IsNullOrEmpty(request.Email))
+            {
+                return BadRequest(ApiResponse<bool>.Failure("Email is required", "Invalid Request"));
+            }
+
+            var exists = await _authService.CheckEmailExistsAsync(request.Email);
+            return Ok(ApiResponse<bool>.Success(exists, "Email check completed"));
+        }
     }
 }

@@ -77,6 +77,8 @@ builder.Services.AddDbContext<PaperaX.Infrastructure.Persistence.ApplicationDbCo
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"), 
         npgsqlOptions => npgsqlOptions.EnableRetryOnFailure(3)));
 
+builder.Services.AddScoped<PaperaX.Application.Interfaces.IApplicationDbContext>(provider => provider.GetRequiredService<PaperaX.Infrastructure.Persistence.ApplicationDbContext>());
+
 // Redis Connection
 builder.Services.AddSingleton(sp =>
 {
@@ -124,11 +126,16 @@ builder.Services.AddHealthChecks();
 // Redis OTP Service
 builder.Services.AddScoped<OtpRedisService>();
 
-// Dependency Injection for Auth Services
+// Dependency Injection Services
 builder.Services.AddScoped<PaperaX.Application.Features.Auth.Interfaces.IGoogleAuthService, PaperaX.Infrastructure.Authentication.GoogleAuthService>();
 builder.Services.AddScoped<PaperaX.Application.Features.Auth.Interfaces.IJwtTokenGenerator, PaperaX.Infrastructure.Authentication.JwtTokenGenerator>();
 builder.Services.AddScoped<PaperaX.Application.Features.Auth.Interfaces.IAuthService, PaperaX.Infrastructure.Authentication.AuthService>();
 builder.Services.AddScoped<PaperaX.Application.Interfaces.IUserRepository, PaperaX.Infrastructure.Repositories.UserRepository>();
+builder.Services.AddScoped<PaperaX.Domain.Catalog.Repositories.IProductRepository, PaperaX.Infrastructure.Catalog.Repositories.ProductRepository>();
+
+builder.Services.AddMediatR(cfg => {
+    cfg.RegisterServicesFromAssembly(typeof(PaperaX.Application.Features.Categories.Commands.CreateCategory.CreateCategoryCommand).Assembly);
+});
 
 builder.Services.AddScoped<IEmailService, EmailService>();
 

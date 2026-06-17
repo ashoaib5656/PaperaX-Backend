@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace PaperaX.Application.Features.Auth.DTOs
 {
-    public class SendOtpRequest
+    public class CheckEmailRequest
     {
         public string Email { get; set; } = string.Empty;
     }

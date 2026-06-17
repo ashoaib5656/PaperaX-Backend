@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PaperaX.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using PaperaX.Infrastructure.Persistence;
 namespace PaperaX.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260615073059_AddCategoryEntity")]
+    partial class AddCategoryEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,47 +24,6 @@ namespace PaperaX.Infrastructure.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("PaperaX.Domain.Entities.Brand", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ContactEmail")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ContactPhone")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("LogoUrl")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("WebsiteUrl")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Brands");
-                });
 
             modelBuilder.Entity("PaperaX.Domain.Entities.Category", b =>
                 {
@@ -71,21 +33,11 @@ namespace PaperaX.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("DisplayOrder")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("ImageUrl")
                         .HasColumnType("text");
 
                     b.Property<bool>("IsActive")
@@ -105,6 +57,53 @@ namespace PaperaX.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Categories");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = -1,
+                            CreatedAt = new DateTime(2026, 6, 15, 7, 30, 57, 741, DateTimeKind.Utc).AddTicks(3984),
+                            Description = "Standard A4 size copier papers",
+                            IsActive = true,
+                            Name = "A4 Paper",
+                            Slug = "a4-paper"
+                        },
+                        new
+                        {
+                            Id = -2,
+                            CreatedAt = new DateTime(2026, 6, 15, 7, 30, 57, 741, DateTimeKind.Utc).AddTicks(4095),
+                            Description = "Large A3 size printing papers",
+                            IsActive = true,
+                            Name = "A3 Paper",
+                            Slug = "a3-paper"
+                        },
+                        new
+                        {
+                            Id = -3,
+                            CreatedAt = new DateTime(2026, 6, 15, 7, 30, 57, 741, DateTimeKind.Utc).AddTicks(4097),
+                            Description = "Specialty printing and photo papers",
+                            IsActive = true,
+                            Name = "Specialty",
+                            Slug = "specialty"
+                        },
+                        new
+                        {
+                            Id = -4,
+                            CreatedAt = new DateTime(2026, 6, 15, 7, 30, 57, 741, DateTimeKind.Utc).AddTicks(4099),
+                            Description = "Kraft and packaging solutions",
+                            IsActive = true,
+                            Name = "Packaging",
+                            Slug = "packaging"
+                        },
+                        new
+                        {
+                            Id = -5,
+                            CreatedAt = new DateTime(2026, 6, 15, 7, 30, 57, 741, DateTimeKind.Utc).AddTicks(4100),
+                            Description = "Notebooks, diaries, and refills",
+                            IsActive = true,
+                            Name = "Notebooks",
+                            Slug = "notebooks"
+                        });
                 });
 
             modelBuilder.Entity("PaperaX.Domain.Entities.Order", b =>
@@ -176,7 +175,7 @@ namespace PaperaX.Infrastructure.Migrations
                         new
                         {
                             Id = -1,
-                            CreatedAt = new DateTime(2026, 6, 16, 11, 38, 6, 112, DateTimeKind.Utc).AddTicks(8325),
+                            CreatedAt = new DateTime(2026, 6, 15, 7, 30, 57, 741, DateTimeKind.Utc).AddTicks(4206),
                             CustomerName = "",
                             DateString = "May 14, 2026",
                             DeliveryMethod = "",
@@ -194,7 +193,7 @@ namespace PaperaX.Infrastructure.Migrations
                         new
                         {
                             Id = -2,
-                            CreatedAt = new DateTime(2026, 6, 16, 11, 38, 6, 112, DateTimeKind.Utc).AddTicks(8335),
+                            CreatedAt = new DateTime(2026, 6, 15, 7, 30, 57, 741, DateTimeKind.Utc).AddTicks(4210),
                             CustomerName = "",
                             DateString = "Apr 28, 2026",
                             DeliveryMethod = "",
@@ -212,7 +211,7 @@ namespace PaperaX.Infrastructure.Migrations
                         new
                         {
                             Id = -3,
-                            CreatedAt = new DateTime(2026, 6, 16, 11, 38, 6, 112, DateTimeKind.Utc).AddTicks(8341),
+                            CreatedAt = new DateTime(2026, 6, 15, 7, 30, 57, 741, DateTimeKind.Utc).AddTicks(4214),
                             CustomerName = "Aarav S.",
                             DateString = "24 Apr, 10:30 AM",
                             DeliveryMethod = "",
@@ -230,7 +229,7 @@ namespace PaperaX.Infrastructure.Migrations
                         new
                         {
                             Id = -4,
-                            CreatedAt = new DateTime(2026, 6, 16, 11, 38, 6, 112, DateTimeKind.Utc).AddTicks(8346),
+                            CreatedAt = new DateTime(2026, 6, 15, 7, 30, 57, 741, DateTimeKind.Utc).AddTicks(4217),
                             CustomerName = "B2B: Paper Solutions",
                             DateString = "24 Apr, 09:15 AM",
                             DeliveryMethod = "",
@@ -248,7 +247,7 @@ namespace PaperaX.Infrastructure.Migrations
                         new
                         {
                             Id = -5,
-                            CreatedAt = new DateTime(2026, 6, 16, 11, 38, 6, 112, DateTimeKind.Utc).AddTicks(8351),
+                            CreatedAt = new DateTime(2026, 6, 15, 7, 30, 57, 741, DateTimeKind.Utc).AddTicks(4219),
                             CustomerName = "Meera K.",
                             DateString = "23 Apr, 06:45 PM",
                             DeliveryMethod = "",
@@ -266,7 +265,7 @@ namespace PaperaX.Infrastructure.Migrations
                         new
                         {
                             Id = -6,
-                            CreatedAt = new DateTime(2026, 6, 16, 11, 38, 6, 112, DateTimeKind.Utc).AddTicks(8355),
+                            CreatedAt = new DateTime(2026, 6, 15, 7, 30, 57, 741, DateTimeKind.Utc).AddTicks(4221),
                             CustomerName = "Global Export",
                             DateString = "23 Apr, 04:20 PM",
                             DeliveryMethod = "",
@@ -284,7 +283,7 @@ namespace PaperaX.Infrastructure.Migrations
                         new
                         {
                             Id = -7,
-                            CreatedAt = new DateTime(2026, 6, 16, 11, 38, 6, 112, DateTimeKind.Utc).AddTicks(8360),
+                            CreatedAt = new DateTime(2026, 6, 15, 7, 30, 57, 741, DateTimeKind.Utc).AddTicks(4223),
                             CustomerName = "Rohan J.",
                             DateString = "22 Apr, 11:00 AM",
                             DeliveryMethod = "",
@@ -342,6 +341,104 @@ namespace PaperaX.Infrastructure.Migrations
                     b.HasIndex("CategoryId");
 
                     b.ToTable("Products");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = -1,
+                            CategoryId = -1,
+                            Description = "",
+                            GSM = 75,
+                            ImageUrl = "",
+                            Name = "Premium A4 Copier Paper",
+                            Price = 250m,
+                            Status = "In Stock",
+                            StockQuantity = 100
+                        },
+                        new
+                        {
+                            Id = -2,
+                            CategoryId = -1,
+                            Description = "",
+                            GSM = 80,
+                            ImageUrl = "",
+                            Name = "Color Print Paper (Assorted)",
+                            Price = 300m,
+                            Status = "Low Stock",
+                            StockQuantity = 100
+                        },
+                        new
+                        {
+                            Id = -3,
+                            CategoryId = -2,
+                            Description = "",
+                            GSM = 80,
+                            ImageUrl = "",
+                            Name = "A3 Executive Paper",
+                            Price = 450m,
+                            Status = "In Stock",
+                            StockQuantity = 100
+                        },
+                        new
+                        {
+                            Id = -4,
+                            CategoryId = -3,
+                            Description = "",
+                            GSM = 180,
+                            ImageUrl = "",
+                            Name = "Photo Glossy Paper",
+                            Price = 600m,
+                            Status = "In Stock",
+                            StockQuantity = 100
+                        },
+                        new
+                        {
+                            Id = -5,
+                            CategoryId = -4,
+                            Description = "",
+                            GSM = 100,
+                            ImageUrl = "",
+                            Name = "Recycled Kraft Paper",
+                            Price = 150m,
+                            Status = "Low Stock",
+                            StockQuantity = 100
+                        },
+                        new
+                        {
+                            Id = -6,
+                            CategoryId = -3,
+                            Description = "",
+                            GSM = 250,
+                            ImageUrl = "",
+                            Name = "Cardstock Heavy",
+                            Price = 800m,
+                            Status = "In Stock",
+                            StockQuantity = 100
+                        },
+                        new
+                        {
+                            Id = -7,
+                            CategoryId = -5,
+                            Description = "",
+                            GSM = 70,
+                            ImageUrl = "",
+                            Name = "A5 Notebook Refills",
+                            Price = 120m,
+                            Status = "In Stock",
+                            StockQuantity = 100
+                        },
+                        new
+                        {
+                            Id = -8,
+                            CategoryId = -3,
+                            Description = "",
+                            GSM = 55,
+                            ImageUrl = "",
+                            Name = "Thermal Receipt Rolls",
+                            Price = 50m,
+                            Status = "Low Stock",
+                            StockQuantity = 100
+                        });
                 });
 
             modelBuilder.Entity("PaperaX.Domain.Entities.User", b =>
@@ -414,7 +511,7 @@ namespace PaperaX.Infrastructure.Migrations
                         {
                             Id = -1,
                             Company = "N/A",
-                            CreatedAt = new DateTime(2026, 6, 16, 11, 38, 6, 112, DateTimeKind.Utc).AddTicks(7557),
+                            CreatedAt = new DateTime(2026, 6, 15, 7, 30, 57, 741, DateTimeKind.Utc).AddTicks(3740),
                             Email = "aarav.sharma@gmail.com",
                             FullName = "Aarav Sharma",
                             IsEmailVerified = true,
@@ -430,7 +527,7 @@ namespace PaperaX.Infrastructure.Migrations
                         {
                             Id = -2,
                             Company = "Paper Solutions Ltd",
-                            CreatedAt = new DateTime(2026, 6, 16, 11, 38, 6, 112, DateTimeKind.Utc).AddTicks(7574),
+                            CreatedAt = new DateTime(2026, 6, 15, 7, 30, 57, 741, DateTimeKind.Utc).AddTicks(3749),
                             Email = "v.mehta@papersolutions.com",
                             FullName = "Vikram Mehta",
                             IsEmailVerified = true,
@@ -446,7 +543,7 @@ namespace PaperaX.Infrastructure.Migrations
                         {
                             Id = -3,
                             Company = "N/A",
-                            CreatedAt = new DateTime(2026, 6, 16, 11, 38, 6, 112, DateTimeKind.Utc).AddTicks(7583),
+                            CreatedAt = new DateTime(2026, 6, 15, 7, 30, 57, 741, DateTimeKind.Utc).AddTicks(3754),
                             Email = "meera.k@yahoo.com",
                             FullName = "Meera Kapoor",
                             IsEmailVerified = true,
@@ -462,7 +559,7 @@ namespace PaperaX.Infrastructure.Migrations
                         {
                             Id = -4,
                             Company = "Global Export Inc.",
-                            CreatedAt = new DateTime(2026, 6, 16, 11, 38, 6, 112, DateTimeKind.Utc).AddTicks(7590),
+                            CreatedAt = new DateTime(2026, 6, 15, 7, 30, 57, 741, DateTimeKind.Utc).AddTicks(3758),
                             Email = "j.doe@globalexport.com",
                             FullName = "John Doe",
                             IsEmailVerified = true,
@@ -478,7 +575,7 @@ namespace PaperaX.Infrastructure.Migrations
                         {
                             Id = -5,
                             Company = "N/A",
-                            CreatedAt = new DateTime(2026, 6, 16, 11, 38, 6, 112, DateTimeKind.Utc).AddTicks(7596),
+                            CreatedAt = new DateTime(2026, 6, 15, 7, 30, 57, 741, DateTimeKind.Utc).AddTicks(3761),
                             Email = "rohan.j@rediffmail.com",
                             FullName = "Rohan Joshi",
                             IsEmailVerified = true,
@@ -494,7 +591,7 @@ namespace PaperaX.Infrastructure.Migrations
                         {
                             Id = -6,
                             Company = "Creative Prints",
-                            CreatedAt = new DateTime(2026, 6, 16, 11, 38, 6, 112, DateTimeKind.Utc).AddTicks(7603),
+                            CreatedAt = new DateTime(2026, 6, 15, 7, 30, 57, 741, DateTimeKind.Utc).AddTicks(3768),
                             Email = "ananya@creativeprints.in",
                             FullName = "Ananya Sen",
                             IsEmailVerified = true,
@@ -510,7 +607,7 @@ namespace PaperaX.Infrastructure.Migrations
                         {
                             Id = -7,
                             Company = "Birla Publications",
-                            CreatedAt = new DateTime(2026, 6, 16, 11, 38, 6, 112, DateTimeKind.Utc).AddTicks(7611),
+                            CreatedAt = new DateTime(2026, 6, 15, 7, 30, 57, 741, DateTimeKind.Utc).AddTicks(3771),
                             Email = "aditya@birlapub.com",
                             FullName = "Aditya Birla",
                             IsEmailVerified = true,
@@ -526,7 +623,7 @@ namespace PaperaX.Infrastructure.Migrations
                         {
                             Id = -8,
                             Company = "N/A",
-                            CreatedAt = new DateTime(2026, 6, 16, 11, 38, 6, 112, DateTimeKind.Utc).AddTicks(7801),
+                            CreatedAt = new DateTime(2026, 6, 15, 7, 30, 57, 741, DateTimeKind.Utc).AddTicks(3775),
                             Email = "pooja.h@outlook.com",
                             FullName = "Pooja Hegde",
                             IsEmailVerified = true,

@@ -18,6 +18,14 @@ namespace PaperaX.Domain.Entities
         public string? RefreshToken { get; set; }
         public DateTime? RefreshTokenExpiryTime { get; set; }
         public DateTime CreatedAt { get; set; }
+        
+        // Mock Data Properties
+        public string Company { get; set; } = string.Empty;
+        public string Phone { get; set; } = string.Empty;
+        public string Type { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
+        public int OrdersCount { get; set; }
+        public decimal TotalSpent { get; set; }
 
     }
 }

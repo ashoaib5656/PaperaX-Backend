@@ -254,5 +254,14 @@ namespace PaperaX.Infrastructure.Authentication
             var value = BitConverter.ToUInt32(randomNumber, 0) % 900000 + 100000;
             return value.ToString();
         }
+
+        public async Task<bool> CheckEmailExistsAsync(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+                return false;
+
+            var user = await _userRepository.GetByEmailAsync(email);
+            return user != null;
+        }
     }
 }
