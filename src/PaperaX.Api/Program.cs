@@ -11,13 +11,35 @@ using PaperaX.Api.Middleware;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Threading.RateLimiting;
 using Microsoft.Extensions.Options;
+using NpgsqlTypes;
+using Serilog.Sinks.PostgreSQL;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Configure Serilog
 builder.Host.UseSerilog((context, loggerConfig) =>
+{
+    var connectionString = context.Configuration.GetConnectionString("DefaultConnection");
+
+    IDictionary<string, ColumnWriterBase> columnWriters = new Dictionary<string, ColumnWriterBase>
+    {
+        { "message", new RenderedMessageColumnWriter(NpgsqlDbType.Text) },
+        { "message_template", new MessageTemplateColumnWriter(NpgsqlDbType.Text) },
+        { "level", new LevelColumnWriter(true, NpgsqlDbType.Varchar) },
+        { "raise_date", new TimestampColumnWriter(NpgsqlDbType.TimestampTz) },
+        { "exception", new ExceptionColumnWriter(NpgsqlDbType.Text) },
+        { "properties", new LogEventSerializedColumnWriter(NpgsqlDbType.Jsonb) }
+    };
+
     loggerConfig.ReadFrom.Configuration(context.Configuration)
-                .WriteTo.Console());
+                .WriteTo.PostgreSQL(
+                    connectionString: connectionString,
+                    tableName: "ErrorLogs",
+                    columnOptions: columnWriters,
+                    needAutoCreateTable: true,
+                    restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Error
+                );
+});
 
 // Add User Secrets in Development
 if (builder.Environment.IsDevelopment())
@@ -130,11 +152,14 @@ builder.Services.AddScoped<OtpRedisService>();
 builder.Services.AddScoped<PaperaX.Application.Features.Auth.Interfaces.IGoogleAuthService, PaperaX.Infrastructure.Authentication.GoogleAuthService>();
 builder.Services.AddScoped<PaperaX.Application.Features.Auth.Interfaces.IJwtTokenGenerator, PaperaX.Infrastructure.Authentication.JwtTokenGenerator>();
 builder.Services.AddScoped<PaperaX.Application.Features.Auth.Interfaces.IAuthService, PaperaX.Infrastructure.Authentication.AuthService>();
-builder.Services.AddScoped<PaperaX.Application.Interfaces.IUserRepository, PaperaX.Infrastructure.Repositories.UserRepository>();
-builder.Services.AddScoped<PaperaX.Domain.Catalog.Repositories.IProductRepository, PaperaX.Infrastructure.Catalog.Repositories.ProductRepository>();
 
 builder.Services.AddMediatR(cfg => {
     cfg.RegisterServicesFromAssembly(typeof(PaperaX.Application.Features.Categories.Commands.CreateCategory.CreateCategoryCommand).Assembly);
+    cfg.AddBehavior(typeof(MediatR.Pipeline.IRequestPreProcessor<>), typeof(PaperaX.Application.Common.Behaviors.LoggingBehavior<>));
+    cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(PaperaX.Application.Common.Behaviors.UnhandledExceptionBehavior<,>));
+    cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(PaperaX.Application.Common.Behaviors.ValidationBehavior<,>));
+    cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(PaperaX.Application.Common.Behaviors.PerformanceBehavior<,>));
+    cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(PaperaX.Application.Common.Behaviors.TransactionBehavior<,>));
 });
 
 builder.Services.AddScoped<IEmailService, EmailService>();

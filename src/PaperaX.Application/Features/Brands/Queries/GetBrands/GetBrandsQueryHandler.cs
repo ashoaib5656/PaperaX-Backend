@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using PaperaX.Application.Interfaces;
+using PaperaX.Domain.Interfaces;
 using PaperaX.Domain.Entities;
 using System.Collections.Generic;
 using System.Threading;
@@ -19,7 +20,7 @@ namespace PaperaX.Application.Features.Brands.Queries.GetBrands
 
         public async Task<List<Brand>> Handle(GetBrandsQuery request, CancellationToken cancellationToken)
         {
-            return await _context.Brands.ToListAsync(cancellationToken);
+            return await _context.Brands.AsNoTracking().ToListAsync(cancellationToken);
         }
     }
 }

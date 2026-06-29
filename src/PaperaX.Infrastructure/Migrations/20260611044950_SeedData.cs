@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -130,13 +130,13 @@ namespace PaperaX.Infrastructure.Migrations
                 columns: new[] { "Id", "CreatedAt", "CustomerName", "DateString", "DeliveryMethod", "Destination", "EstDelivery", "ItemSummary", "ItemsJson", "Payment", "Status", "StringId", "TotalAmount", "TotalString", "UserId" },
                 values: new object[,]
                 {
-                    { -7, new DateTime(2026, 6, 11, 4, 49, 36, 952, DateTimeKind.Utc).AddTicks(7842), "Rohan J.", "22 Apr, 11:00 AM", "", "", "", "", "", "Card", "Delivered", "#PX-105", 0m, "₹8,500", 0 },
-                    { -6, new DateTime(2026, 6, 11, 4, 49, 36, 952, DateTimeKind.Utc).AddTicks(7838), "Global Export", "23 Apr, 04:20 PM", "", "", "", "", "", "Wire", "Pending", "#PX-104", 0m, "₹4,20,000", 0 },
-                    { -5, new DateTime(2026, 6, 11, 4, 49, 36, 952, DateTimeKind.Utc).AddTicks(7830), "Meera K.", "23 Apr, 06:45 PM", "", "", "", "", "", "COD", "Delivered", "#PX-103", 0m, "₹1,200", 0 },
-                    { -4, new DateTime(2026, 6, 11, 4, 49, 36, 952, DateTimeKind.Utc).AddTicks(7826), "B2B: Paper Solutions", "24 Apr, 09:15 AM", "", "", "", "", "", "NEFT", "Shipped", "#PX-102", 0m, "₹85,000", 0 },
-                    { -3, new DateTime(2026, 6, 11, 4, 49, 36, 952, DateTimeKind.Utc).AddTicks(7820), "Aarav S.", "24 Apr, 10:30 AM", "", "", "", "", "", "UPI", "Processing", "#PX-101", 0m, "₹4,500", 0 },
-                    { -2, new DateTime(2026, 6, 11, 4, 49, 36, 952, DateTimeKind.Utc).AddTicks(7816), "", "Apr 28, 2026", "", "Logistics Center, Whitefield, BLR", "May 02, 2026", "Premium Specialty Kraft Rolls", "[{\"name\":\"Premium Specialty Kraft Rolls\",\"qty\":\"4 Rolls\",\"price\":\"₹32,500\"}]", "", "delivered", "#PX-ORDER-4811", 0m, "₹32,500", 0 },
-                    { -1, new DateTime(2026, 6, 11, 4, 49, 36, 952, DateTimeKind.Utc).AddTicks(7807), "", "May 14, 2026", "", "Main Corporate Hub, Hassan Industrial Area, KA", "May 19, 2026", "JK Excel Bond A4 +1 more", "[{\"name\":\"JK Excel Bond A4 Office Paper\",\"qty\":\"20 Boxes\",\"price\":\"₹44,000\"},{\"name\":\"Double Coated Art Sheet (250GSM)\",\"qty\":\"2 Packs\",\"price\":\"₹10,000\"}]", "", "shipped", "#PX-ORDER-4921", 0m, "₹54,000", 0 }
+                    { -7, new DateTime(2026, 6, 11, 4, 49, 36, 952, DateTimeKind.Utc).AddTicks(7842), "Rohan J.", "22 Apr, 11:00 AM", "", "", "", "", "", "Card", "Delivered", "#PX-105", 0m, "?8,500", 0 },
+                    { -6, new DateTime(2026, 6, 11, 4, 49, 36, 952, DateTimeKind.Utc).AddTicks(7838), "Global Export", "23 Apr, 04:20 PM", "", "", "", "", "", "Wire", "Pending", "#PX-104", 0m, "?4,20,000", 0 },
+                    { -5, new DateTime(2026, 6, 11, 4, 49, 36, 952, DateTimeKind.Utc).AddTicks(7830), "Meera K.", "23 Apr, 06:45 PM", "", "", "", "", "", "COD", "Delivered", "#PX-103", 0m, "?1,200", 0 },
+                    { -4, new DateTime(2026, 6, 11, 4, 49, 36, 952, DateTimeKind.Utc).AddTicks(7826), "B2B: Paper Solutions", "24 Apr, 09:15 AM", "", "", "", "", "", "NEFT", "Shipped", "#PX-102", 0m, "?85,000", 0 },
+                    { -3, new DateTime(2026, 6, 11, 4, 49, 36, 952, DateTimeKind.Utc).AddTicks(7820), "Aarav S.", "24 Apr, 10:30 AM", "", "", "", "", "", "UPI", "Processing", "#PX-101", 0m, "?4,500", 0 },
+                    { -2, new DateTime(2026, 6, 11, 4, 49, 36, 952, DateTimeKind.Utc).AddTicks(7816), "", "Apr 28, 2026", "", "Logistics Center, Whitefield, BLR", "May 02, 2026", "Premium Specialty Kraft Rolls", "[{\"name\":\"Premium Specialty Kraft Rolls\",\"qty\":\"4 Rolls\",\"price\":\"?32,500\"}]", "", "delivered", "#PX-ORDER-4811", 0m, "?32,500", 0 },
+                    { -1, new DateTime(2026, 6, 11, 4, 49, 36, 952, DateTimeKind.Utc).AddTicks(7807), "", "May 14, 2026", "", "Main Corporate Hub, Hassan Industrial Area, KA", "May 19, 2026", "JK Excel Bond A4 +1 more", "[{\"name\":\"JK Excel Bond A4 Office Paper\",\"qty\":\"20 Boxes\",\"price\":\"?44,000\"},{\"name\":\"Double Coated Art Sheet (250GSM)\",\"qty\":\"2 Packs\",\"price\":\"?10,000\"}]", "", "shipped", "#PX-ORDER-4921", 0m, "?54,000", 0 }
                 });
 
             migrationBuilder.InsertData(

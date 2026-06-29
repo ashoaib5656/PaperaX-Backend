@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,5 +10,7 @@ namespace PaperaX.Application.Features.Auth.Interfaces
     {
         Task SendOtpAsync(string email, string otp);
         Task SendEmailAsync(string to, string subject, string body);
+        Task SendCustomerInviteAsync(string email, string name, string inviteToken);
+        Task SendCustomerWelcomeWithPasswordAsync(string email, string name, string password);
     }
 }

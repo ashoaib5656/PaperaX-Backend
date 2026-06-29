@@ -21,11 +21,19 @@ namespace PaperaX.Infrastructure.Persistence
         public DbSet<Order> Orders => Set<Order>();
         public DbSet<Category> Categories => Set<Category>();
         public DbSet<Brand> Brands => Set<Brand>();
+        public DbSet<Coupon> Coupons => Set<Coupon>();
+        public DbSet<Promotion> Promotions => Set<Promotion>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            modelBuilder.SeedData();
+            modelBuilder.Entity<Coupon>().HasIndex(c => c.Code).IsUnique();
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+        }
+
+        public Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction BeginTransaction()
+        {
+            return Database.BeginTransaction();
         }
     }
 }

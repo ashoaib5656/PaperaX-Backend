@@ -19,6 +19,10 @@ namespace PaperaX.Domain.Entities
         public DateTime? RefreshTokenExpiryTime { get; set; }
         public DateTime CreatedAt { get; set; }
         
+        // Invite Token Fields
+        public string? InviteToken { get; set; }
+        public DateTime? InviteTokenExpiry { get; set; }
+        
         // Mock Data Properties
         public string Company { get; set; } = string.Empty;
         public string Phone { get; set; } = string.Empty;

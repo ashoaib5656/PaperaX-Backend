@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using PaperaX.Application.Features.Auth.DTOs;
 using PaperaX.Application.Features.Auth.Interfaces;
 using PaperaX.Application.Interfaces;
+using PaperaX.Domain.Interfaces;
 using PaperaX.Domain.Entities;
 using PaperaX.Infrastructure.Redis;
 using BCrypt.Net;
@@ -14,22 +15,33 @@ namespace PaperaX.Infrastructure.Authentication
     {
         private readonly IGoogleAuthService _googleAuthService;
         private readonly IJwtTokenGenerator _jwtTokenGenerator;
-        private readonly IUserRepository _userRepository;
+        private readonly IApplicationDbContext _context;
         private readonly IEmailService _emailService;
         private readonly OtpRedisService _otpRedisService;
 
         public AuthService(
-            IGoogleAuthService googleAuthService,
+            IApplicationDbContext context,
             IJwtTokenGenerator jwtTokenGenerator,
-            IUserRepository userRepository,
+            IGoogleAuthService googleAuthService,
             IEmailService emailService,
             OtpRedisService otpRedisService)
         {
-            _googleAuthService = googleAuthService;
+            _context = context;
             _jwtTokenGenerator = jwtTokenGenerator;
-            _userRepository = userRepository;
+            _googleAuthService = googleAuthService;
             _emailService = emailService;
             _otpRedisService = otpRedisService;
+        }
+
+        private string GenerateSecureOtp()
+        {
+            byte[] randomNumber = new byte[3];
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(randomNumber);
+                int value = Math.Abs(BitConverter.ToInt32(randomNumber, 0));
+                return (value % 1000000).ToString("D6");
+            }
         }
 
         public async Task SendOtpAsync(string email)
@@ -75,7 +87,7 @@ namespace PaperaX.Infrastructure.Authentication
             }
 
             // Check if user already exists
-            var existingUser = await _userRepository.GetByEmailAsync(request.Email);
+            var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
             if (existingUser != null)
             {
                 throw new InvalidOperationException("User with this email already exists.");
@@ -89,12 +101,14 @@ namespace PaperaX.Infrastructure.Authentication
                 FullName = request.FullName,
                 Email = request.Email,
                 PasswordHash = passwordHash,
-                Role = "User",
+                Role = "Customer",
+                Status = "Active",
                 IsEmailVerified = true,
                 CreatedAt = DateTime.UtcNow
             };
 
-            await _userRepository.AddAsync(user);
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
 
             // Generate authentication tokens
             var accessToken = _jwtTokenGenerator.GenerateToken(user);
@@ -103,7 +117,7 @@ namespace PaperaX.Infrastructure.Authentication
             // Save Refresh Token
             user.RefreshToken = refreshToken;
             user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
-            await _userRepository.UpdateAsync(user);
+            await _context.SaveChangesAsync();
 
             return new AuthResponse
             {
@@ -123,7 +137,7 @@ namespace PaperaX.Infrastructure.Authentication
                 throw new ArgumentException("Email and password are required.");
             }
 
-            var user = await _userRepository.GetByEmailAsync(email);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
             if (user == null)
             {
                 throw new UnauthorizedAccessException("Invalid email or password.");
@@ -143,14 +157,14 @@ namespace PaperaX.Infrastructure.Authentication
             // Save Refresh Token
             user.RefreshToken = refreshToken;
             user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
-            await _userRepository.UpdateAsync(user);
+            await _context.SaveChangesAsync();
 
             return new AuthResponse
             {
                 UserId = user.Id,
                 FullName = user.FullName,
                 Email = user.Email,
-                Role = user.Role ?? "User",
+                Role = user.Role ?? "Customer",
                 AccessToken = accessToken,
                 RefreshToken = refreshToken
             };
@@ -169,7 +183,7 @@ namespace PaperaX.Infrastructure.Authentication
                 throw new UnauthorizedAccessException("Invalid Google Token");
             }
 
-            var user = await _userRepository.GetByEmailAsync(googlePayload.Value.Email);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == googlePayload.Value.Email);
 
             if (user == null)
             {
@@ -180,17 +194,19 @@ namespace PaperaX.Infrastructure.Authentication
                     FullName = googlePayload.Value.FullName,
                     GoogleId = googlePayload.Value.GoogleId,
                     IsEmailVerified = true,
-                    Role = "User",
+                    Role = "Customer",
+                    Status = "Active",
                     CreatedAt = DateTime.UtcNow
                 };
 
-                await _userRepository.AddAsync(user);
+                _context.Users.Add(user);
+                await _context.SaveChangesAsync();
             }
             else if (string.IsNullOrEmpty(user.GoogleId))
             {
                 // Link Google authentication to existing email user
                 user.GoogleId = googlePayload.Value.GoogleId;
-                await _userRepository.UpdateAsync(user);
+                await _context.SaveChangesAsync();
             }
 
             // Generate authentication tokens
@@ -200,14 +216,14 @@ namespace PaperaX.Infrastructure.Authentication
             // Save Refresh Token
             user.RefreshToken = refreshToken;
             user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
-            await _userRepository.UpdateAsync(user);
+            await _context.SaveChangesAsync();
 
             return new AuthResponse
             {
                 UserId = user.Id,
                 FullName = user.FullName,
                 Email = user.Email,
-                Role = user.Role ?? "User",
+                Role = user.Role ?? "Customer",
                 AccessToken = accessToken,
                 RefreshToken = refreshToken
             };
@@ -218,28 +234,51 @@ namespace PaperaX.Infrastructure.Authentication
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
 
-            var user = await _userRepository.GetByEmailAsync(request.Email)
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email)
                 ?? throw new InvalidOperationException("User not found.");
+
+            // Validate Invite Token if present
+            if (!string.IsNullOrEmpty(request.Token))
+            {
+                if (user.InviteToken != request.Token)
+                {
+                    throw new UnauthorizedAccessException("Invalid or expired invitation link.");
+                }
+
+                if (user.InviteTokenExpiry.HasValue && user.InviteTokenExpiry.Value < DateTime.UtcNow)
+                {
+                    throw new UnauthorizedAccessException("Invitation link has expired.");
+                }
+
+                // Clear the token after successful use
+                user.InviteToken = null;
+                user.InviteTokenExpiry = null;
+            }
 
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
             user.RefreshToken = null;
             user.RefreshTokenExpiryTime = null;
+            
+            if (user.Status == "Pending Setup")
+            {
+                user.Status = "Active";
+            }
 
-            await _userRepository.UpdateAsync(user);
+            await _context.SaveChangesAsync();
 
             var accessToken = _jwtTokenGenerator.GenerateToken(user);
             var refreshToken = _jwtTokenGenerator.GenerateRefreshToken();
 
             user.RefreshToken = refreshToken;
             user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
-            await _userRepository.UpdateAsync(user);
+            await _context.SaveChangesAsync();
 
             return new AuthResponse
             {
                 UserId = user.Id,
                 FullName = user.FullName,
                 Email = user.Email,
-                Role = user.Role ?? "User",
+                Role = user.Role ?? "Customer",
                 AccessToken = accessToken,
                 RefreshToken = refreshToken
             };
@@ -260,7 +299,7 @@ namespace PaperaX.Infrastructure.Authentication
             if (string.IsNullOrWhiteSpace(email))
                 return false;
 
-            var user = await _userRepository.GetByEmailAsync(email);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
             return user != null;
         }
     }
