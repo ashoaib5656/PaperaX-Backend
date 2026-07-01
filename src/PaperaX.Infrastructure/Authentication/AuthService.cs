@@ -1,10 +1,10 @@
 using System;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using PaperaX.Application.Features.Auth.DTOs;
 using PaperaX.Application.Features.Auth.Interfaces;
 using PaperaX.Application.Interfaces;
-using PaperaX.Domain.Interfaces;
 using PaperaX.Domain.Entities;
 using PaperaX.Infrastructure.Redis;
 using BCrypt.Net;
@@ -35,7 +35,7 @@ namespace PaperaX.Infrastructure.Authentication
 
         private string GenerateSecureOtp()
         {
-            byte[] randomNumber = new byte[3];
+            byte[] randomNumber = new byte[4];
             using (var rng = RandomNumberGenerator.Create())
             {
                 rng.GetBytes(randomNumber);
@@ -284,15 +284,7 @@ namespace PaperaX.Infrastructure.Authentication
             };
         }
 
-        private string GenerateSecureOtp()
-        {
-            // Secure numeric generator
-            var randomNumber = new byte[4];
-            using var rng = RandomNumberGenerator.Create();
-            rng.GetBytes(randomNumber);
-            var value = BitConverter.ToUInt32(randomNumber, 0) % 900000 + 100000;
-            return value.ToString();
-        }
+
 
         public async Task<bool> CheckEmailExistsAsync(string email)
         {

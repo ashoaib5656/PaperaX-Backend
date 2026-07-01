@@ -23,6 +23,7 @@ namespace PaperaX.Infrastructure.Persistence
         public DbSet<Brand> Brands => Set<Brand>();
         public DbSet<Coupon> Coupons => Set<Coupon>();
         public DbSet<Promotion> Promotions => Set<Promotion>();
+        public DbSet<PromotionType> PromotionTypes => Set<PromotionType>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -34,6 +35,11 @@ namespace PaperaX.Infrastructure.Persistence
         public Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction BeginTransaction()
         {
             return Database.BeginTransaction();
+        }
+
+        public Microsoft.EntityFrameworkCore.Storage.IExecutionStrategy CreateExecutionStrategy()
+        {
+            return Database.CreateExecutionStrategy();
         }
     }
 }

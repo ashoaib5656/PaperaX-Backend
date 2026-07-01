@@ -9,6 +9,7 @@ namespace PaperaX.Application.Features.Promotions.Commands.UpdatePromotion
         public string CampaignName { get; set; } = string.Empty;
         public string PromotionType { get; set; } = string.Empty;
         public decimal DiscountValue { get; set; }
+        public string DiscountText { get; set; } = string.Empty;
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
         public string Status { get; set; } = string.Empty;

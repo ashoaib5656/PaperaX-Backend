@@ -24,6 +24,7 @@ namespace PaperaX.Application.Features.Promotions.Commands.CreatePromotion
                 CampaignName = request.CampaignName,
                 PromotionType = request.PromotionType,
                 DiscountValue = request.DiscountValue,
+                DiscountText = request.DiscountText,
                 StartTime = request.StartTime,
                 EndTime = request.EndTime,
                 Status = request.Status,
@@ -44,4 +45,3 @@ namespace PaperaX.Application.Features.Promotions.Commands.CreatePromotion
         }
     }
 }
-

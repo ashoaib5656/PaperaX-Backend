@@ -8,6 +8,7 @@ namespace PaperaX.Shared.DTOs.Promotions
         public string CampaignName { get; set; } = string.Empty;
         public string PromotionType { get; set; } = string.Empty;
         public decimal DiscountValue { get; set; }
+        public string? DiscountText { get; set; }
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
         public string Status { get; set; } = string.Empty;

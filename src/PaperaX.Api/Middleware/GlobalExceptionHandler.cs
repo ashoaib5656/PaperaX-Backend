@@ -41,7 +41,7 @@ namespace PaperaX.Api.Middleware
                 UnauthorizedAccessException => ((int)HttpStatusCode.Unauthorized, "Unauthorized", exception.Message),
                 ArgumentException => ((int)HttpStatusCode.BadRequest, "Bad Request", exception.Message),
                 InvalidOperationException => ((int)HttpStatusCode.Conflict, "Conflict", exception.Message),
-                _ => ((int)HttpStatusCode.InternalServerError, "Internal Server Error", "An unexpected error occurred.")
+                _ => ((int)HttpStatusCode.InternalServerError, "Internal Server Error", exception.ToString())
             };
         }
     }

@@ -1,3 +1,4 @@
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using PaperaX.Infrastructure.Redis;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -169,6 +170,12 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<PaperaX.Infrastructure.Persistence.ApplicationDbContext>();
+    context.Database.Migrate();
+}
 
 app.UseExceptionHandler();
 

@@ -2,7 +2,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using PaperaX.Shared.DTOs.Coupons;
 using PaperaX.Application.Interfaces;
-using PaperaX.Domain.Interfaces;
+using PaperaX.Application.Interfaces;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;

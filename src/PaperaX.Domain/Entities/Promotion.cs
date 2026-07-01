@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,6 +12,7 @@ namespace PaperaX.Domain.Entities
         public string CampaignName { get; set; } = string.Empty;
         public string PromotionType { get; set; } = string.Empty; 
         public decimal DiscountValue { get; set; }
+        public string? DiscountText { get; set; }
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
         public string Status { get; set; } = string.Empty;  

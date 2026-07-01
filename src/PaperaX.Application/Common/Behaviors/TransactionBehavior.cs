@@ -4,6 +4,7 @@ using PaperaX.Application.Interfaces;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace PaperaX.Application.Common.Behaviors
 {
@@ -25,14 +26,18 @@ namespace PaperaX.Application.Common.Behaviors
 
             try
             {
-                using var transaction = _context.BeginTransaction();
-                
-                response = await next();
-                
-                await _context.SaveChangesAsync(cancellationToken);
-                transaction.Commit();
-                
-                return response;
+                var strategy = _context.CreateExecutionStrategy();
+                return await strategy.ExecuteAsync(async () =>
+                {
+                    using var transaction = _context.BeginTransaction();
+                    
+                    response = await next();
+                    
+                    await _context.SaveChangesAsync(cancellationToken);
+                    transaction.Commit();
+                    
+                    return response;
+                });
             }
             catch (Exception ex)
             {

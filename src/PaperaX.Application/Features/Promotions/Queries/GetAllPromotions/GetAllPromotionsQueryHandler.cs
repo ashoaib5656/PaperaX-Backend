@@ -20,29 +20,30 @@ namespace PaperaX.Application.Features.Promotions.Queries.GetAllPromotions
 
         public async Task<IEnumerable<PromotionDto>> Handle(GetAllPromotionsQuery request, CancellationToken cancellationToken)
         {
-            var promotions = await _context.Promotions.AsNoTracking().ToListAsync(cancellationToken);
+            var promotions = await _context.Promotions.AsNoTracking()
+                .Select(p => new PromotionDto
+                {
+                    Id = p.Id,
+                    CampaignName = p.CampaignName,
+                    PromotionType = p.PromotionType,
+                    DiscountValue = p.DiscountValue,
+                    DiscountText = p.DiscountText,
+                    StartTime = p.StartTime,
+                    EndTime = p.EndTime,
+                    Status = p.Status,
+                    AppliesTo = p.AppliesTo,
+                    ApplicableCategories = p.ApplicableCategories,
+                    ApplicableProducts = p.ApplicableProducts,
+                    MinimumOrderValue = p.MinimumOrderValue,
+                    MaximumDiscountAmount = p.MaximumDiscountAmount,
+                    Priority = p.Priority,
+                    BannerImage = null, // Optimized: Omit heavy base64 images for list view
+                    Description = p.Description,
+                    CreatedAt = p.CreatedAt,
+                    UpdatedAt = p.UpdatedAt
+                }).ToListAsync(cancellationToken);
             
-            return promotions.Select(p => new PromotionDto
-            {
-                Id = p.Id,
-                CampaignName = p.CampaignName,
-                PromotionType = p.PromotionType,
-                DiscountValue = p.DiscountValue,
-                StartTime = p.StartTime,
-                EndTime = p.EndTime,
-                Status = p.Status,
-                AppliesTo = p.AppliesTo,
-                ApplicableCategories = p.ApplicableCategories,
-                ApplicableProducts = p.ApplicableProducts,
-                MinimumOrderValue = p.MinimumOrderValue,
-                MaximumDiscountAmount = p.MaximumDiscountAmount,
-                Priority = p.Priority,
-                BannerImage = p.BannerImage,
-                Description = p.Description,
-                CreatedAt = p.CreatedAt,
-                UpdatedAt = p.UpdatedAt
-            });
+            return promotions;
         }
     }
 }
-

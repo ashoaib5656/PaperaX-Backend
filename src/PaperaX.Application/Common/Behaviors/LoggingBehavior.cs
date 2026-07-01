@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace PaperaX.Application.Common.Behaviors
 {
-    public class LoggingBehavior<TRequest> : IRequestPreProcessor<TRequest>
+    public class LoggingBehavior<TRequest> : IRequestPreProcessor<TRequest> where TRequest : notnull
     {
         private readonly ILogger _logger;
 

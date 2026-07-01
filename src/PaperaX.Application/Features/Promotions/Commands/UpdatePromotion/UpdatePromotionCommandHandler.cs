@@ -28,6 +28,7 @@ namespace PaperaX.Application.Features.Promotions.Commands.UpdatePromotion
             promotion.CampaignName = request.CampaignName;
             promotion.PromotionType = request.PromotionType;
             promotion.DiscountValue = request.DiscountValue;
+            promotion.DiscountText = request.DiscountText;
             promotion.StartTime = request.StartTime;
             promotion.EndTime = request.EndTime;
             promotion.Status = request.Status;

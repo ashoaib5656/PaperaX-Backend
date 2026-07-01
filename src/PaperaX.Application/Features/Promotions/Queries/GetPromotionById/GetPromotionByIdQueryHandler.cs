@@ -28,6 +28,7 @@ namespace PaperaX.Application.Features.Promotions.Queries.GetPromotionById
                 CampaignName = p.CampaignName,
                 PromotionType = p.PromotionType,
                 DiscountValue = p.DiscountValue,
+                DiscountText = p.DiscountText,
                 StartTime = p.StartTime,
                 EndTime = p.EndTime,
                 Status = p.Status,
