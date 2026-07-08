@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using PaperaX.Application.Common.Models;
 using PaperaX.Application.Features.Promotions.Commands.CreatePromotion;
 using PaperaX.Application.Features.Promotions.Commands.DeletePromotion;
 using PaperaX.Application.Features.Promotions.Commands.UpdatePromotion;
@@ -23,47 +24,47 @@ namespace PaperaX.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<PromotionDto>>> GetAll()
+        public async Task<IActionResult> GetAll()
         {
             var result = await _mediator.Send(new GetAllPromotionsQuery());
-            return Ok(result);
+            return Ok(ApiResponse<object>.Success(result, "Promotion retrieved successfully"));
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<PromotionDto>> GetById(int id)
+        public async Task<IActionResult> GetById(int id)
         {
             var result = await _mediator.Send(new GetPromotionByIdQuery { Id = id });
             if (result == null)
             {
-                return NotFound();
+                return NotFound(ApiResponse<object>.Failure("Promotion not found"));
             }
-            return Ok(result);
+            return Ok(ApiResponse<object>.Success(result, "Promotion retrieved successfully"));
         }
 
         [HttpPost]
-        public async Task<ActionResult<int>> Create([FromBody] CreatePromotionCommand command)
+        public async Task<IActionResult> Create([FromBody] CreatePromotionCommand command)
         {
             var id = await _mediator.Send(command);
-            return CreatedAtAction(nameof(GetById), new { id }, id);
+            return Ok(ApiResponse<int>.Success(id, "Promotion created successfully"));
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult> Update(int id, [FromBody] UpdatePromotionCommand command)
+        public async Task<IActionResult> Update(int id, [FromBody] UpdatePromotionCommand command)
         {
             if (id != command.Id)
             {
-                return BadRequest("ID in URL does not match ID in command payload.");
+                return BadRequest(ApiResponse<bool>.Failure("ID in URL does not match ID in command payload."));
             }
 
             await _mediator.Send(command);
-            return NoContent();
+            return Ok(ApiResponse<bool>.Success(true, "Promotion processed successfully"));
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
             await _mediator.Send(new DeletePromotionCommand { Id = id });
-            return NoContent();
+            return Ok(ApiResponse<bool>.Success(true, "Promotion processed successfully"));
         }
     }
 }

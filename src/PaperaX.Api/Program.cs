@@ -14,7 +14,8 @@ using System.Threading.RateLimiting;
 using Microsoft.Extensions.Options;
 using NpgsqlTypes;
 using Serilog.Sinks.PostgreSQL;
-
+using Hangfire;
+using Hangfire.PostgreSql;
 var builder = WebApplication.CreateBuilder(args);
 
 // Configure Serilog
@@ -102,12 +103,26 @@ builder.Services.AddDbContext<PaperaX.Infrastructure.Persistence.ApplicationDbCo
 
 builder.Services.AddScoped<PaperaX.Application.Interfaces.IApplicationDbContext>(provider => provider.GetRequiredService<PaperaX.Infrastructure.Persistence.ApplicationDbContext>());
 
+// Hangfire
+builder.Services.AddHangfire(configuration => configuration
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UsePostgreSqlStorage(c => c.UseNpgsqlConnection(builder.Configuration.GetConnectionString("DefaultConnection"))));
+
+builder.Services.AddHangfireServer();
+
+// Add Background Job Services
+builder.Services.AddTransient<PaperaX.Infrastructure.BackgroundJobs.BannerStatusJob>();
+
 // Redis Connection
 builder.Services.AddSingleton(sp =>
 {
     var redisSettings = sp.GetRequiredService<IOptions<RedisSettings>>().Value;
     return new RedisConnection(redisSettings.ConnectionString);
 });
+
+builder.Services.AddSingleton<PaperaX.Application.Interfaces.ICacheService, PaperaX.Infrastructure.Caching.RedisCacheService>();
 
 // JWT Authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -199,5 +214,17 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapHealthChecks("/health");
+
+app.UseHangfireDashboard();
+
+// Register Recurring Jobs
+using (var scope = app.Services.CreateScope())
+{
+    var recurringJobManager = scope.ServiceProvider.GetRequiredService<IRecurringJobManager>();
+    recurringJobManager.AddOrUpdate<PaperaX.Infrastructure.BackgroundJobs.BannerStatusJob>(
+        "banner-status-job",
+        job => job.ExecuteAsync(),
+        Cron.Minutely);
+}
 
 app.Run();

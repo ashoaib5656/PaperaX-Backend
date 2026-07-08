@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PaperaX.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using PaperaX.Infrastructure.Persistence;
 namespace PaperaX.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260702055143_UpdateBannerEntityForCMS")]
+    partial class UpdateBannerEntityForCMS
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -94,9 +97,6 @@ namespace PaperaX.Infrastructure.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("VariantGroup")
-                        .HasColumnType("text");
-
                     b.HasKey("Id");
 
                     b.HasIndex("PromotionId");
@@ -118,14 +118,8 @@ namespace PaperaX.Infrastructure.Migrations
                     b.Property<int>("Clicks")
                         .HasColumnType("integer");
 
-                    b.Property<int>("Conversions")
-                        .HasColumnType("integer");
-
                     b.Property<DateTime>("Date")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<decimal>("RevenueGenerated")
-                        .HasColumnType("numeric");
 
                     b.Property<int>("Views")
                         .HasColumnType("integer");
@@ -135,100 +129,6 @@ namespace PaperaX.Infrastructure.Migrations
                     b.HasIndex("BannerId");
 
                     b.ToTable("BannerAnalytics");
-                });
-
-            modelBuilder.Entity("PaperaX.Domain.Entities.BannerAsset", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("BannerId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("DesktopImageUrl")
-                        .HasColumnType("text");
-
-                    b.Property<string>("MobileImageUrl")
-                        .HasColumnType("text");
-
-                    b.Property<string>("TabletImageUrl")
-                        .HasColumnType("text");
-
-                    b.Property<string>("VideoUrl")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BannerId")
-                        .IsUnique();
-
-                    b.ToTable("BannerAssets");
-                });
-
-            modelBuilder.Entity("PaperaX.Domain.Entities.BannerTargetingRule", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("BannerId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("CountryTarget")
-                        .HasColumnType("text");
-
-                    b.Property<string>("DeviceTarget")
-                        .HasColumnType("text");
-
-                    b.Property<int?>("MaxViewsPerUser")
-                        .HasColumnType("integer");
-
-                    b.Property<decimal?>("MinCartValue")
-                        .HasColumnType("numeric");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BannerId")
-                        .IsUnique();
-
-                    b.ToTable("BannerTargetingRules");
-                });
-
-            modelBuilder.Entity("PaperaX.Domain.Entities.BannerVersion", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("BannerId")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("ChangedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("ChangedBy")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("SnapshotJson")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("VersionNumber")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BannerId");
-
-                    b.ToTable("BannerVersions");
                 });
 
             modelBuilder.Entity("PaperaX.Domain.Entities.Brand", b =>
@@ -673,40 +573,7 @@ namespace PaperaX.Infrastructure.Migrations
             modelBuilder.Entity("PaperaX.Domain.Entities.BannerAnalytics", b =>
                 {
                     b.HasOne("PaperaX.Domain.Entities.Banner", "Banner")
-                        .WithMany("Analytics")
-                        .HasForeignKey("BannerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Banner");
-                });
-
-            modelBuilder.Entity("PaperaX.Domain.Entities.BannerAsset", b =>
-                {
-                    b.HasOne("PaperaX.Domain.Entities.Banner", "Banner")
-                        .WithOne("Asset")
-                        .HasForeignKey("PaperaX.Domain.Entities.BannerAsset", "BannerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Banner");
-                });
-
-            modelBuilder.Entity("PaperaX.Domain.Entities.BannerTargetingRule", b =>
-                {
-                    b.HasOne("PaperaX.Domain.Entities.Banner", "Banner")
-                        .WithOne("TargetingRule")
-                        .HasForeignKey("PaperaX.Domain.Entities.BannerTargetingRule", "BannerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Banner");
-                });
-
-            modelBuilder.Entity("PaperaX.Domain.Entities.BannerVersion", b =>
-                {
-                    b.HasOne("PaperaX.Domain.Entities.Banner", "Banner")
-                        .WithMany("Versions")
+                        .WithMany()
                         .HasForeignKey("BannerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -723,17 +590,6 @@ namespace PaperaX.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Category");
-                });
-
-            modelBuilder.Entity("PaperaX.Domain.Entities.Banner", b =>
-                {
-                    b.Navigation("Analytics");
-
-                    b.Navigation("Asset");
-
-                    b.Navigation("TargetingRule");
-
-                    b.Navigation("Versions");
                 });
 
             modelBuilder.Entity("PaperaX.Domain.Entities.Category", b =>

@@ -24,6 +24,11 @@ namespace PaperaX.Infrastructure.Persistence
         public DbSet<Coupon> Coupons => Set<Coupon>();
         public DbSet<Promotion> Promotions => Set<Promotion>();
         public DbSet<PromotionType> PromotionTypes => Set<PromotionType>();
+        public DbSet<Banner> Banners { get; set; }
+        public DbSet<BannerAnalytics> BannerAnalytics { get; set; }
+        public DbSet<BannerAsset> BannerAssets { get; set; }
+        public DbSet<BannerTargetingRule> BannerTargetingRules { get; set; }
+        public DbSet<BannerVersion> BannerVersions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

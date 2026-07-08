@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using PaperaX.Application.Common.Models;
 using Microsoft.EntityFrameworkCore;
 using PaperaX.Infrastructure.Persistence;
 using System.Threading.Tasks;

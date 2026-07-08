@@ -23,14 +23,14 @@ namespace PaperaX.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<ApiResponse<IEnumerable<CouponDto>>>> GetAll()
+        public async Task<IActionResult> GetAll()
         {
             var coupons = await _mediator.Send(new GetCouponsQuery());
             return Ok(ApiResponse<IEnumerable<CouponDto>>.Success(coupons, "Coupons retrieved successfully"));
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<ApiResponse<CouponDto>>> GetById(int id)
+        public async Task<IActionResult> GetById(int id)
         {
             var coupon = await _mediator.Send(new GetCouponByIdQuery(id));
             if (coupon == null) 
@@ -39,14 +39,14 @@ namespace PaperaX.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<ApiResponse<int>>> Create([FromBody] CreateCouponDto dto)
+        public async Task<IActionResult> Create([FromBody] CreateCouponDto dto)
         {
             var id = await _mediator.Send(new CreateCouponCommand { CouponDto = dto });
             return Ok(ApiResponse<int>.Success(id, "Coupon created successfully"));
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<ApiResponse<bool>>> Update(int id, [FromBody] UpdateCouponDto dto)
+        public async Task<IActionResult> Update(int id, [FromBody] UpdateCouponDto dto)
         {
             if (id != dto.Id) 
                 return BadRequest(ApiResponse<bool>.Failure("ID mismatch between URL and payload"));
@@ -59,7 +59,7 @@ namespace PaperaX.Api.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult<ApiResponse<bool>>> Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
             var result = await _mediator.Send(new DeleteCouponCommand(id));
             if (!result) 

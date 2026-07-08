@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using PaperaX.Application.Common.Models;
 using PaperaX.Application.Features.PromotionTypes.Commands.CreatePromotionType;
 using PaperaX.Application.Features.PromotionTypes.Commands.DeletePromotionType;
 using PaperaX.Application.Features.PromotionTypes.Commands.UpdatePromotionType;
@@ -23,47 +24,47 @@ namespace PaperaX.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<PromotionTypeDto>>> GetAll()
+        public async Task<IActionResult> GetAll()
         {
             var result = await _mediator.Send(new GetAllPromotionTypesQuery());
-            return Ok(result);
+            return Ok(ApiResponse<object>.Success(result, "Promotion Type retrieved successfully"));
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<PromotionTypeDto>> GetById(int id)
+        public async Task<IActionResult> GetById(int id)
         {
             var result = await _mediator.Send(new GetPromotionTypeByIdQuery { Id = id });
             if (result == null)
             {
-                return NotFound();
+                return NotFound(ApiResponse<object>.Failure("Promotion Type not found"));
             }
-            return Ok(result);
+            return Ok(ApiResponse<object>.Success(result, "Promotion Type retrieved successfully"));
         }
 
         [HttpPost]
-        public async Task<ActionResult<int>> Create([FromBody] CreatePromotionTypeCommand command)
+        public async Task<IActionResult> Create([FromBody] CreatePromotionTypeCommand command)
         {
             var id = await _mediator.Send(command);
-            return CreatedAtAction(nameof(GetById), new { id }, id);
+            return Ok(ApiResponse<int>.Success(id, "Promotion Type created successfully"));
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult> Update(int id, [FromBody] UpdatePromotionTypeCommand command)
+        public async Task<IActionResult> Update(int id, [FromBody] UpdatePromotionTypeCommand command)
         {
             if (id != command.Id)
             {
-                return BadRequest("ID in URL does not match ID in command payload.");
+                return BadRequest(ApiResponse<bool>.Failure("ID in URL does not match ID in command payload."));
             }
 
             await _mediator.Send(command);
-            return NoContent();
+            return Ok(ApiResponse<bool>.Success(true, "Promotion Type processed successfully"));
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
             await _mediator.Send(new DeletePromotionTypeCommand { Id = id });
-            return NoContent();
+            return Ok(ApiResponse<bool>.Success(true, "Promotion Type processed successfully"));
         }
     }
 }

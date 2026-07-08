@@ -15,6 +15,11 @@ namespace PaperaX.Application.Interfaces
         DbSet<Coupon> Coupons { get; }
         DbSet<Promotion> Promotions { get; }
         DbSet<PromotionType> PromotionTypes { get; }
+        DbSet<Banner> Banners { get; }
+        DbSet<BannerAnalytics> BannerAnalytics { get; }
+        DbSet<BannerAsset> BannerAssets { get; }
+        DbSet<BannerTargetingRule> BannerTargetingRules { get; }
+        DbSet<BannerVersion> BannerVersions { get; }
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
         Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction BeginTransaction();
         Microsoft.EntityFrameworkCore.Storage.IExecutionStrategy CreateExecutionStrategy();

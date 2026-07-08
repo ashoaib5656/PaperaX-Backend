@@ -1,7 +1,6 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using PaperaX.Application.Interfaces;
-using PaperaX.Application.Interfaces;
 using PaperaX.Domain.Entities;
 using System.Collections.Generic;
 using System.Threading;

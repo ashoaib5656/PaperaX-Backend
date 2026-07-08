@@ -1,7 +1,6 @@
 using MediatR;
 using PaperaX.Shared.DTOs.Customers;
 using PaperaX.Application.Interfaces;
-using PaperaX.Application.Interfaces;
 using PaperaX.Application.Features.Auth.Interfaces;
 using PaperaX.Domain.Entities;
 using System;

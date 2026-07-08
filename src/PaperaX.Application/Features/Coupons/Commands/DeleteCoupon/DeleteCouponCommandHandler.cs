@@ -1,7 +1,6 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using PaperaX.Application.Interfaces;
-using PaperaX.Application.Interfaces;
 using System.Threading;
 using System.Threading.Tasks;
 

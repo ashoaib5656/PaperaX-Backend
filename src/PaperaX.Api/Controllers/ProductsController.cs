@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using PaperaX.Application.Common.Models;
 using PaperaX.Application.Features.Products.Queries.GetProducts;
 using System.Threading.Tasks;
 
