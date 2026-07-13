@@ -30,6 +30,11 @@ namespace PaperaX.Domain.Entities
         public string Status { get; set; } = string.Empty;
         public int OrdersCount { get; set; }
         public decimal TotalSpent { get; set; }
+        
+        // Additional Account Properties
+        public string? Address { get; set; }
+        public string? Gstin { get; set; }
+        public bool IsDeleted { get; set; } = false;
 
     }
 }
