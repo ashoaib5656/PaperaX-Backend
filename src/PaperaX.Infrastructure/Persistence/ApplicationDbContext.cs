@@ -34,6 +34,14 @@ namespace PaperaX.Infrastructure.Persistence
         {
             base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<Coupon>().HasIndex(c => c.Code).IsUnique();
+            
+            modelBuilder.Entity<Product>()
+                .Property(p => p.Specifications)
+                .HasConversion(
+                    v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+                    v => System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new Dictionary<string, string>()
+                );
+
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
         }
 

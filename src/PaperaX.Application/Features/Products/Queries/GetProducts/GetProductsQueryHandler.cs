@@ -19,7 +19,10 @@ namespace PaperaX.Application.Features.Products.Queries.GetProducts
 
         public async Task<IEnumerable<Product>> Handle(GetProductsQuery request, CancellationToken cancellationToken)
         {
-            return await _context.Products.AsNoTracking().ToListAsync(cancellationToken);
+            return await _context.Products
+                .Include(p => p.Category)
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
         }
     }
 }
