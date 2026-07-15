@@ -26,7 +26,7 @@ namespace PaperaX.Application.Features.Products.Queries.GetProductById
         {
             return await _context.Products
                 .Include(p => p.Category)
-                .FirstOrDefaultAsync(p => p.Id == request.Id, cancellationToken);
+                .FirstOrDefaultAsync(p => p.Id == request.Id, cancellationToken)!;
         }
     }
 }

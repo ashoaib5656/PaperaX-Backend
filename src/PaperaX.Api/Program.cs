@@ -194,6 +194,7 @@ using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<PaperaX.Infrastructure.Persistence.ApplicationDbContext>();
     context.Database.Migrate();
+    await PaperaX.Infrastructure.Persistence.Seeders.MenuSeeder.SeedAsync(context);
 }
 
 app.UseExceptionHandler();

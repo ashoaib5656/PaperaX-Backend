@@ -20,6 +20,12 @@ namespace PaperaX.Application.Interfaces
         DbSet<BannerAsset> BannerAssets { get; }
         DbSet<BannerTargetingRule> BannerTargetingRules { get; }
         DbSet<BannerVersion> BannerVersions { get; }
+        DbSet<Role> Roles { get; }
+        DbSet<Permission> Permissions { get; }
+        DbSet<RolePermission> RolePermissions { get; }
+        DbSet<Menu> Menus { get; }
+        DbSet<MenuRole> MenuRoles { get; }
+        DbSet<MenuAudit> MenuAudits { get; }
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
         Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction BeginTransaction();
         Microsoft.EntityFrameworkCore.Storage.IExecutionStrategy CreateExecutionStrategy();

@@ -22,7 +22,7 @@ namespace PaperaX.Application.Features.Customers.Queries.GetCustomers
         public async Task<List<CustomerDto>> Handle(GetCustomersQuery request, CancellationToken cancellationToken)
         {
             return await _context.Users
-                .Where(u => u.Role == "Customer")
+                .Where(u => u.LegacyRole == "Customer")
                 .Select(u => new CustomerDto
                 {
                     UserId = u.Id,

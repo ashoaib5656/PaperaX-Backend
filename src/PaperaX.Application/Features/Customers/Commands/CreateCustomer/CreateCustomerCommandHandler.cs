@@ -35,7 +35,7 @@ namespace PaperaX.Application.Features.Customers.Commands.CreateCustomer
                 Phone = request.Customer.Phone,
                 Type = request.Customer.Type,
                 Status = request.Customer.SendInvite ? "Pending Setup" : request.Customer.Status,
-                Role = "Customer",
+                LegacyRole = "Customer",
                 CreatedAt = DateTime.UtcNow,
                 OrdersCount = 0,
                 TotalSpent = 0

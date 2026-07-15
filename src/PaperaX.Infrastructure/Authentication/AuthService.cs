@@ -101,7 +101,7 @@ namespace PaperaX.Infrastructure.Authentication
                 FullName = request.FullName,
                 Email = request.Email,
                 PasswordHash = passwordHash,
-                Role = "Customer",
+                LegacyRole = "Customer",
                 Status = "Active",
                 IsEmailVerified = true,
                 CreatedAt = DateTime.UtcNow
@@ -124,7 +124,7 @@ namespace PaperaX.Infrastructure.Authentication
                 UserId = user.Id,
                 FullName = user.FullName,
                 Email = user.Email,
-                Role = user.Role,
+                Role = user.LegacyRole,
                 AccessToken = accessToken,
                 RefreshToken = refreshToken
             };
@@ -164,7 +164,7 @@ namespace PaperaX.Infrastructure.Authentication
                 UserId = user.Id,
                 FullName = user.FullName,
                 Email = user.Email,
-                Role = user.Role ?? "Customer",
+                Role = user.LegacyRole ?? "Customer",
                 AccessToken = accessToken,
                 RefreshToken = refreshToken
             };
@@ -194,7 +194,7 @@ namespace PaperaX.Infrastructure.Authentication
                     FullName = googlePayload.Value.FullName,
                     GoogleId = googlePayload.Value.GoogleId,
                     IsEmailVerified = true,
-                    Role = "Customer",
+                    LegacyRole = "Customer",
                     Status = "Active",
                     CreatedAt = DateTime.UtcNow
                 };
@@ -223,7 +223,7 @@ namespace PaperaX.Infrastructure.Authentication
                 UserId = user.Id,
                 FullName = user.FullName,
                 Email = user.Email,
-                Role = user.Role ?? "Customer",
+                Role = user.LegacyRole ?? "Customer",
                 AccessToken = accessToken,
                 RefreshToken = refreshToken
             };
@@ -278,7 +278,7 @@ namespace PaperaX.Infrastructure.Authentication
                 UserId = user.Id,
                 FullName = user.FullName,
                 Email = user.Email,
-                Role = user.Role ?? "Customer",
+                Role = user.LegacyRole ?? "Customer",
                 AccessToken = accessToken,
                 RefreshToken = refreshToken
             };

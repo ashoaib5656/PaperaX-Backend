@@ -21,7 +21,7 @@ namespace PaperaX.Application.Features.Customers.Queries.GetCustomers
         public async Task<CustomerDto> Handle(GetCustomerByIdQuery request, CancellationToken cancellationToken)
         {
             var customer = await _context.Users
-                .Where(u => u.Role == "Customer" && u.Id == request.Id)
+                .Where(u => u.LegacyRole == "Customer" && u.Id == request.Id)
                 .Select(u => new CustomerDto
                 {
                     UserId = u.Id,
@@ -42,7 +42,7 @@ namespace PaperaX.Application.Features.Customers.Queries.GetCustomers
                 throw new Exception($"Customer with ID {request.Id} not found.");
             }
 
-            return customer;
+            return customer!;
         }
     }
 }

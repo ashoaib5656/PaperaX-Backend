@@ -29,6 +29,12 @@ namespace PaperaX.Infrastructure.Persistence
         public DbSet<BannerAsset> BannerAssets { get; set; }
         public DbSet<BannerTargetingRule> BannerTargetingRules { get; set; }
         public DbSet<BannerVersion> BannerVersions { get; set; }
+        public DbSet<Role> Roles => Set<Role>();
+        public DbSet<Permission> Permissions => Set<Permission>();
+        public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
+        public DbSet<Menu> Menus => Set<Menu>();
+        public DbSet<MenuRole> MenuRoles => Set<MenuRole>();
+        public DbSet<MenuAudit> MenuAudits => Set<MenuAudit>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -41,6 +47,18 @@ namespace PaperaX.Infrastructure.Persistence
                     v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
                     v => System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new Dictionary<string, string>()
                 );
+
+            modelBuilder.Entity<RolePermission>()
+                .HasKey(rp => new { rp.RoleId, rp.PermissionId });
+
+            modelBuilder.Entity<MenuRole>()
+                .HasKey(mr => new { mr.MenuId, mr.RoleId });
+
+            modelBuilder.Entity<Menu>()
+                .HasOne(m => m.Parent)
+                .WithMany(m => m.Children)
+                .HasForeignKey(m => m.ParentId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
         }

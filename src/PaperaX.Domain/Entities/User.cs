@@ -14,7 +14,9 @@ namespace PaperaX.Domain.Entities
         public string PasswordHash { get; set; } = string.Empty;
         public string? GoogleId { get; set; }
         public bool IsEmailVerified { get; set; }
-        public string Role { get; set; } = string.Empty;
+        public string LegacyRole { get; set; } = string.Empty;
+        public int? RoleId { get; set; }
+        public Role? Role { get; set; }
         public string? RefreshToken { get; set; }
         public DateTime? RefreshTokenExpiryTime { get; set; }
         public DateTime CreatedAt { get; set; }

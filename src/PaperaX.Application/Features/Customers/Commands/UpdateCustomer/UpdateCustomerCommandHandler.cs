@@ -26,7 +26,7 @@ namespace PaperaX.Application.Features.Customers.Commands.UpdateCustomer
             }
 
             var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.Id == request.Id && u.Role == "Customer", cancellationToken);
+                .FirstOrDefaultAsync(u => u.Id == request.Id && u.LegacyRole == "Customer", cancellationToken);
 
             if (user == null)
             {

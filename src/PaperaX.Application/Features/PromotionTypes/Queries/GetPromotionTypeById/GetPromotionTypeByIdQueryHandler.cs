@@ -15,7 +15,7 @@ namespace PaperaX.Application.Features.PromotionTypes.Queries.GetPromotionTypeBy
         public async Task<PromotionTypeDto> Handle(GetPromotionTypeByIdQuery request, CancellationToken cancellationToken)
         {
             var entity = await _context.PromotionTypes.FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
-            if (entity == null) return null;
+            if (entity == null) return null!;
 
             return new PromotionTypeDto
             {

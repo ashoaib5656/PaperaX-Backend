@@ -19,7 +19,7 @@ namespace PaperaX.Application.Features.Customers.Commands.DeleteCustomer
         public async Task<bool> Handle(DeleteCustomerCommand request, CancellationToken cancellationToken)
         {
             var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.Id == request.Id && u.Role == "Customer", cancellationToken);
+                .FirstOrDefaultAsync(u => u.Id == request.Id && u.LegacyRole == "Customer", cancellationToken);
 
             if (user == null)
             {
