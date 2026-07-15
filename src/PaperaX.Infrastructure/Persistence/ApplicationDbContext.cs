@@ -32,6 +32,7 @@ namespace PaperaX.Infrastructure.Persistence
         public DbSet<Role> Roles => Set<Role>();
         public DbSet<Permission> Permissions => Set<Permission>();
         public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
+        public DbSet<RoleAudit> RoleAudits => Set<RoleAudit>();
         public DbSet<Menu> Menus => Set<Menu>();
         public DbSet<MenuRole> MenuRoles => Set<MenuRole>();
         public DbSet<MenuAudit> MenuAudits => Set<MenuAudit>();

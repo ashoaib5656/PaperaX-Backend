@@ -98,6 +98,7 @@ builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
     });
 
 // DbContext (with Resilience)
@@ -194,7 +195,6 @@ using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<PaperaX.Infrastructure.Persistence.ApplicationDbContext>();
     context.Database.Migrate();
-    await PaperaX.Infrastructure.Persistence.Seeders.MenuSeeder.SeedAsync(context);
 }
 
 app.UseExceptionHandler();

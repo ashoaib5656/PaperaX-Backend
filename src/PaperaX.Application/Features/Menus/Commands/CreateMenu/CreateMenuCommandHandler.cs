@@ -58,11 +58,32 @@ namespace PaperaX.Application.Features.Menus.Commands.CreateMenu
             }
 
             // Audit Logging
+            var auditDto = new PaperaX.Application.Features.Menus.Queries.GetAllMenus.MenuDetailsDto
+            {
+                Id = menu.Id,
+                Title = menu.Title,
+                Code = menu.Code,
+                Route = menu.Route,
+                Icon = menu.Icon,
+                ParentId = menu.ParentId,
+                OrderNo = menu.OrderNo,
+                Description = menu.Description,
+                IsVisible = menu.IsVisible,
+                IsEnabled = menu.IsEnabled,
+                Placement = menu.Placement,
+                PermissionId = menu.PermissionId,
+                FeaturedTitle = menu.FeaturedTitle,
+                FeaturedDescription = menu.FeaturedDescription,
+                FeaturedRoute = menu.FeaturedRoute,
+                FeaturedLinkText = menu.FeaturedLinkText,
+                RoleIds = request.RoleIds ?? new System.Collections.Generic.List<int>()
+            };
+
             var audit = new MenuAudit
             {
                 MenuId = menu.Id,
                 Action = "CREATE",
-                NewValue = JsonSerializer.Serialize(menu),
+                NewValue = JsonSerializer.Serialize(auditDto),
                 PerformedBy = request.PerformedByUserId,
                 Timestamp = DateTime.UtcNow
             };

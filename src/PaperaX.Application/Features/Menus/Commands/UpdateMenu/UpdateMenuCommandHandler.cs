@@ -7,7 +7,6 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 
 namespace PaperaX.Application.Features.Menus.Commands.UpdateMenu
 {
@@ -24,7 +23,7 @@ namespace PaperaX.Application.Features.Menus.Commands.UpdateMenu
 
         public async Task<bool> Handle(UpdateMenuCommand request, CancellationToken cancellationToken)
         {
-            var menu = await _context.Menus.FirstOrDefaultAsync(m => m.Id == request.Id, cancellationToken);
+            var menu = await _context.Menus.Include(m => m.MenuRoles).FirstOrDefaultAsync(m => m.Id == request.Id, cancellationToken);
             
             if (menu == null)
             {
@@ -40,7 +39,27 @@ namespace PaperaX.Application.Features.Menus.Commands.UpdateMenu
                 }
             }
 
-            var oldValue = JsonSerializer.Serialize(menu);
+            var oldAuditDto = new PaperaX.Application.Features.Menus.Queries.GetAllMenus.MenuDetailsDto
+            {
+                Id = menu.Id,
+                Title = menu.Title,
+                Code = menu.Code,
+                Route = menu.Route,
+                Icon = menu.Icon,
+                ParentId = menu.ParentId,
+                OrderNo = menu.OrderNo,
+                Description = menu.Description,
+                IsVisible = menu.IsVisible,
+                IsEnabled = menu.IsEnabled,
+                Placement = menu.Placement,
+                PermissionId = menu.PermissionId,
+                FeaturedTitle = menu.FeaturedTitle,
+                FeaturedDescription = menu.FeaturedDescription,
+                FeaturedRoute = menu.FeaturedRoute,
+                FeaturedLinkText = menu.FeaturedLinkText,
+                RoleIds = menu.MenuRoles.Select(mr => mr.RoleId).ToList()
+            };
+            var oldValue = JsonSerializer.Serialize(oldAuditDto);
 
             menu.Title = request.Title;
             menu.Code = request.Code;
@@ -76,12 +95,33 @@ namespace PaperaX.Application.Features.Menus.Commands.UpdateMenu
             
             await _context.SaveChangesAsync(cancellationToken);
 
+            var newAuditDto = new PaperaX.Application.Features.Menus.Queries.GetAllMenus.MenuDetailsDto
+            {
+                Id = menu.Id,
+                Title = menu.Title,
+                Code = menu.Code,
+                Route = menu.Route,
+                Icon = menu.Icon,
+                ParentId = menu.ParentId,
+                OrderNo = menu.OrderNo,
+                Description = menu.Description,
+                IsVisible = menu.IsVisible,
+                IsEnabled = menu.IsEnabled,
+                Placement = menu.Placement,
+                PermissionId = menu.PermissionId,
+                FeaturedTitle = menu.FeaturedTitle,
+                FeaturedDescription = menu.FeaturedDescription,
+                FeaturedRoute = menu.FeaturedRoute,
+                FeaturedLinkText = menu.FeaturedLinkText,
+                RoleIds = request.RoleIds ?? new System.Collections.Generic.List<int>()
+            };
+
             var audit = new MenuAudit
             {
                 MenuId = menu.Id,
                 Action = "UPDATE",
                 OldValue = oldValue,
-                NewValue = JsonSerializer.Serialize(menu),
+                NewValue = JsonSerializer.Serialize(newAuditDto),
                 PerformedBy = request.PerformedByUserId,
                 Timestamp = DateTime.UtcNow
             };

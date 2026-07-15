@@ -23,6 +23,7 @@ namespace PaperaX.Application.Interfaces
         DbSet<Role> Roles { get; }
         DbSet<Permission> Permissions { get; }
         DbSet<RolePermission> RolePermissions { get; }
+        DbSet<RoleAudit> RoleAudits { get; }
         DbSet<Menu> Menus { get; }
         DbSet<MenuRole> MenuRoles { get; }
         DbSet<MenuAudit> MenuAudits { get; }

@@ -7,7 +7,6 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 
 namespace PaperaX.Application.Features.Menus.Commands.DeleteMenu
 {
@@ -24,7 +23,7 @@ namespace PaperaX.Application.Features.Menus.Commands.DeleteMenu
 
         public async Task<bool> Handle(DeleteMenuCommand request, CancellationToken cancellationToken)
         {
-            var menu = await _context.Menus.FirstOrDefaultAsync(m => m.Id == request.Id, cancellationToken);
+            var menu = await _context.Menus.Include(m => m.MenuRoles).FirstOrDefaultAsync(m => m.Id == request.Id, cancellationToken);
             
             if (menu == null)
             {
@@ -37,7 +36,27 @@ namespace PaperaX.Application.Features.Menus.Commands.DeleteMenu
                 throw new System.InvalidOperationException("Cannot delete a menu that has active child menus.");
             }
 
-            var oldValue = JsonSerializer.Serialize(menu);
+            var oldAuditDto = new PaperaX.Application.Features.Menus.Queries.GetAllMenus.MenuDetailsDto
+            {
+                Id = menu.Id,
+                Title = menu.Title,
+                Code = menu.Code,
+                Route = menu.Route,
+                Icon = menu.Icon,
+                ParentId = menu.ParentId,
+                OrderNo = menu.OrderNo,
+                Description = menu.Description,
+                IsVisible = menu.IsVisible,
+                IsEnabled = menu.IsEnabled,
+                Placement = menu.Placement,
+                PermissionId = menu.PermissionId,
+                FeaturedTitle = menu.FeaturedTitle,
+                FeaturedDescription = menu.FeaturedDescription,
+                FeaturedRoute = menu.FeaturedRoute,
+                FeaturedLinkText = menu.FeaturedLinkText,
+                RoleIds = menu.MenuRoles.Select(mr => mr.RoleId).ToList()
+            };
+            var oldValue = JsonSerializer.Serialize(oldAuditDto);
             var placement = menu.Placement;
 
             menu.IsVisible = false;
