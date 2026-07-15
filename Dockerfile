@@ -24,6 +24,9 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 EXPOSE 8080
 
+# Disable FileSystemWatcher for appsettings to prevent hitting Linux inotify limits
+ENV DOTNET_HOSTBUILDER__RELOADCONFIGONCHANGE=false
+
 # Copy the published output from the build stage
 COPY --from=build /app/publish .
 

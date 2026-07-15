@@ -16,6 +16,7 @@ using NpgsqlTypes;
 using Serilog.Sinks.PostgreSQL;
 using Hangfire;
 using Hangfire.PostgreSql;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Configure Serilog
