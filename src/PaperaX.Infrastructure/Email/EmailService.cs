@@ -1,24 +1,23 @@
 using PaperaX.Application.Features.Auth.Interfaces;
 using Microsoft.Extensions.Options;
-using MailKit.Net.Smtp;
-using MailKit.Security;
-using MimeKit;
+using Resend;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Security.Cryptography.X509Certificates;
 
 namespace PaperaX.Infrastructure.Email
 {
     public class EmailService: IEmailService
     {
         private readonly EmailSettings _emailSettings;
+        private readonly IResend _resend;
 
-        public EmailService(IOptions<EmailSettings> emailSettings)
+        public EmailService(IOptions<EmailSettings> emailSettings, IResend resend)
         {
             _emailSettings = emailSettings.Value;
+            _resend = resend;
         }
 
         public async Task SendOtpAsync(string email, string otp)
@@ -170,28 +169,15 @@ namespace PaperaX.Infrastructure.Email
 
         public async Task SendEmailAsync(string to, string subject, string body)
         {
-            var email = new MimeKit.MimeMessage();
-
-            email.From.Add(MailboxAddress.Parse(_emailSettings.FromEmail));
-
-            email.To.Add(MailboxAddress.Parse(to));
-
-            email.Subject = subject;
-
-            email.Body = new TextPart(MimeKit.Text.TextFormat.Html)
+            var message = new EmailMessage
             {
-                Text = body
+                From = _emailSettings.FromEmail,
+                To = { to },
+                Subject = subject,
+                HtmlBody = body
             };
 
-            using var smtp = new SmtpClient();
-            await smtp.ConnectAsync(_emailSettings.SmtpServer, _emailSettings.SmtpPort, SecureSocketOptions.Auto);
-
-            await smtp.AuthenticateAsync(_emailSettings.SmtpUsername, _emailSettings.SmtpPassword);
-
-            await smtp.SendAsync(email);
-
-            await smtp.DisconnectAsync(true);
-
+            await _resend.EmailSendAsync(message);
         }
     }
 }

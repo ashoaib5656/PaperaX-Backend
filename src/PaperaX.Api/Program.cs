@@ -73,6 +73,13 @@ builder.Services.AddOptions<EmailSettings>()
     .ValidateDataAnnotations()
     .ValidateOnStart();
 
+builder.Services.AddOptions<Resend.ResendClientOptions>()
+    .Configure<IOptions<EmailSettings>>((options, emailSettings) => 
+    {
+        options.ApiToken = emailSettings.Value.ResendApiKey;
+    });
+builder.Services.AddHttpClient<Resend.IResend, Resend.ResendClient>();
+
 // ---------------------------
 // Add services to the container.
 // ---------------------------

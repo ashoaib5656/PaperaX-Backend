@@ -10,17 +10,8 @@ namespace PaperaX.Infrastructure.Email
 {
     public class EmailSettings
     {
-        [Required(ErrorMessage = "SmtpServer is required")]
-        public string SmtpServer { get; set; } = string.Empty;
-
-        [Range(1, 65535)]
-        public int SmtpPort { get; set; }
-
-        [Required(ErrorMessage = "SmtpUsername is required")]
-        public string SmtpUsername { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "SmtpPassword is required")]
-        public string SmtpPassword { get; set; } = string.Empty;
+        [Required(ErrorMessage = "ResendApiKey is required")]
+        public string ResendApiKey { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "FromEmail is required")]
         [EmailAddress]
