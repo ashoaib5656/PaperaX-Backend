@@ -27,6 +27,7 @@ namespace PaperaX.Application.Interfaces
         DbSet<Menu> Menus { get; }
         DbSet<MenuRole> MenuRoles { get; }
         DbSet<MenuAudit> MenuAudits { get; }
+        DbSet<RefreshToken> RefreshTokens { get; }
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
         Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction BeginTransaction();
         Microsoft.EntityFrameworkCore.Storage.IExecutionStrategy CreateExecutionStrategy();

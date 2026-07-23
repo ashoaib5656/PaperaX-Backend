@@ -36,6 +36,7 @@ namespace PaperaX.Infrastructure.Persistence
         public DbSet<Menu> Menus => Set<Menu>();
         public DbSet<MenuRole> MenuRoles => Set<MenuRole>();
         public DbSet<MenuAudit> MenuAudits => Set<MenuAudit>();
+        public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -60,6 +61,16 @@ namespace PaperaX.Infrastructure.Persistence
                 .WithMany(m => m.Children)
                 .HasForeignKey(m => m.ParentId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<RefreshToken>()
+                .HasIndex(rt => rt.TokenHash)
+                .IsUnique();
+
+            modelBuilder.Entity<RefreshToken>()
+                .HasOne(rt => rt.User)
+                .WithMany()
+                .HasForeignKey(rt => rt.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
         }
