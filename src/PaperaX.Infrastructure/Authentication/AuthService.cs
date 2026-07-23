@@ -44,6 +44,16 @@ namespace PaperaX.Infrastructure.Authentication
             }
         }
 
+        private string HashRefreshToken(string token)
+        {
+            using (var sha256 = SHA256.Create())
+            {
+                var bytes = System.Text.Encoding.UTF8.GetBytes(token);
+                var hash = sha256.ComputeHash(bytes);
+                return Convert.ToBase64String(hash);
+            }
+        }
+
         public async Task SendOtpAsync(string email)
         {
             if (string.IsNullOrWhiteSpace(email))
@@ -115,7 +125,7 @@ namespace PaperaX.Infrastructure.Authentication
             var refreshToken = _jwtTokenGenerator.GenerateRefreshToken();
 
             // Save Refresh Token
-            user.RefreshToken = refreshToken;
+            user.RefreshToken = HashRefreshToken(refreshToken);
             user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
             await _context.SaveChangesAsync();
 
@@ -155,7 +165,7 @@ namespace PaperaX.Infrastructure.Authentication
             var refreshToken = _jwtTokenGenerator.GenerateRefreshToken();
 
             // Save Refresh Token
-            user.RefreshToken = refreshToken;
+            user.RefreshToken = HashRefreshToken(refreshToken);
             user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
             await _context.SaveChangesAsync();
 
@@ -214,7 +224,7 @@ namespace PaperaX.Infrastructure.Authentication
             var refreshToken = _jwtTokenGenerator.GenerateRefreshToken();
 
             // Save Refresh Token
-            user.RefreshToken = refreshToken;
+            user.RefreshToken = HashRefreshToken(refreshToken);
             user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
             await _context.SaveChangesAsync();
 
@@ -269,7 +279,7 @@ namespace PaperaX.Infrastructure.Authentication
             var accessToken = _jwtTokenGenerator.GenerateToken(user);
             var refreshToken = _jwtTokenGenerator.GenerateRefreshToken();
 
-            user.RefreshToken = refreshToken;
+            user.RefreshToken = HashRefreshToken(refreshToken);
             user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
             await _context.SaveChangesAsync();
 
@@ -293,6 +303,53 @@ namespace PaperaX.Infrastructure.Authentication
 
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
             return user != null;
+        }
+
+        public async Task<AuthResponse> RefreshTokenAsync(string refreshToken)
+        {
+            if (string.IsNullOrWhiteSpace(refreshToken))
+                throw new UnauthorizedAccessException("Refresh token is required.");
+
+            var hashedToken = HashRefreshToken(refreshToken);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.RefreshToken == hashedToken);
+
+            if (user == null || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+            {
+                throw new UnauthorizedAccessException("Invalid or expired refresh token.");
+            }
+
+            var newAccessToken = _jwtTokenGenerator.GenerateToken(user);
+            var newRefreshToken = _jwtTokenGenerator.GenerateRefreshToken();
+
+            user.RefreshToken = HashRefreshToken(newRefreshToken);
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+            await _context.SaveChangesAsync();
+
+            return new AuthResponse
+            {
+                UserId = user.Id,
+                FullName = user.FullName,
+                Email = user.Email,
+                Role = user.LegacyRole ?? "Customer",
+                AccessToken = newAccessToken,
+                RefreshToken = newRefreshToken
+            };
+        }
+
+        public async Task LogoutAsync(string refreshToken)
+        {
+            if (string.IsNullOrWhiteSpace(refreshToken))
+                return;
+
+            var hashedToken = HashRefreshToken(refreshToken);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.RefreshToken == hashedToken);
+
+            if (user != null)
+            {
+                user.RefreshToken = null;
+                user.RefreshTokenExpiryTime = null;
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }
