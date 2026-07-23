@@ -92,13 +92,19 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() 
-            ?? new[] { "http://localhost:3000", "http://localhost:5173", "https://paperax.vercel.app" };
+        // CORS is defense-in-depth: it blocks direct browser requests to the Render API.
+        // In production the browser only calls the Vercel origin (proxy forwards server-side),
+        // so CORS is not what makes cookies work — the proxy is.
+        var allowedOrigins = builder.Environment.IsDevelopment()
+            ? builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+                ?? new[] { "http://localhost:3000", "http://localhost:5173" }
+            : builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+                ?? new[] { "https://paperax.vercel.app" };
 
         policy.WithOrigins(allowedOrigins)
               .AllowAnyHeader()
               .AllowAnyMethod()
-              .AllowCredentials(); // Optional: often needed if passing auth cookies
+              .AllowCredentials();
     });
 });
 

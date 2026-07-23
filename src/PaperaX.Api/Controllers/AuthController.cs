@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
+using PaperaX.Api.Helpers;
 using PaperaX.Application.Common.Models;
 using PaperaX.Application.Features.Auth.DTOs;
 using PaperaX.Application.Features.Auth.Interfaces;
@@ -21,26 +22,6 @@ namespace PaperaX.Api.Controllers
             _env = env;
         }
 
-        private bool IsSecureCookieEnvironment => !_env.IsDevelopment();
-
-        private CookieOptions GetRefreshTokenCookieOptions(bool expired = false)
-        {
-            var options = new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = IsSecureCookieEnvironment,
-                SameSite = IsSecureCookieEnvironment ? SameSiteMode.None : SameSiteMode.Lax,
-                Path = "/",
-                Expires = expired ? DateTime.UtcNow.AddDays(-1) : DateTime.UtcNow.AddDays(7)
-            };
-            return options;
-        }
-
-        private void SetRefreshTokenCookie(string refreshToken)
-        {
-            Response.Cookies.Append("refresh_token", refreshToken, GetRefreshTokenCookieOptions());
-        }
-
         [HttpPost("google-login")]
         public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginRequest request)
         {
@@ -51,7 +32,7 @@ namespace PaperaX.Api.Controllers
             }
 
             var response = await _authService.GoogleLoginAsync(request.IdToken);
-            SetRefreshTokenCookie(response.RefreshToken);
+            CookieHelper.SetRefreshTokenCookie(Response.HttpContext, _env, response.RefreshToken);
             response.RefreshToken = null; // Do not return in body
             var successResponse = ApiResponse<AuthResponse>.Success(response, "Login successful");
             return Ok(successResponse);
@@ -103,7 +84,7 @@ namespace PaperaX.Api.Controllers
             }
 
             var response = await _authService.RegisterAsync(request);
-            SetRefreshTokenCookie(response.RefreshToken);
+            CookieHelper.SetRefreshTokenCookie(Response.HttpContext, _env, response.RefreshToken);
             response.RefreshToken = null;
             var successResponse = ApiResponse<AuthResponse>.Success(response, "Registration successful");
             return Ok(successResponse);
@@ -119,7 +100,7 @@ namespace PaperaX.Api.Controllers
             }
 
             var response = await _authService.ResetPasswordAsync(request);
-            SetRefreshTokenCookie(response.RefreshToken);
+            CookieHelper.SetRefreshTokenCookie(Response.HttpContext, _env, response.RefreshToken);
             response.RefreshToken = null;
             var successResponse = ApiResponse<AuthResponse>.Success(response, "Password reset successfully");
             return Ok(successResponse);
@@ -135,7 +116,7 @@ namespace PaperaX.Api.Controllers
             }
 
             var response = await _authService.LoginAsync(request.Email, request.Password);
-            SetRefreshTokenCookie(response.RefreshToken);
+            CookieHelper.SetRefreshTokenCookie(Response.HttpContext, _env, response.RefreshToken);
             response.RefreshToken = null;
             var successResponse = ApiResponse<AuthResponse>.Success(response, "Login successful");
             return Ok(successResponse);
@@ -167,12 +148,13 @@ namespace PaperaX.Api.Controllers
             try
             {
                 var response = await _authService.RefreshTokenAsync(refreshToken);
-                SetRefreshTokenCookie(response.RefreshToken);
+                CookieHelper.SetRefreshTokenCookie(Response.HttpContext, _env, response.RefreshToken);
                 response.RefreshToken = null; // Do not return in body
                 return Ok(ApiResponse<AuthResponse>.Success(response, "Token refreshed successfully"));
             }
             catch (System.UnauthorizedAccessException ex)
             {
+                CookieHelper.DeleteRefreshTokenCookie(Response.HttpContext, _env);
                 return Unauthorized(ApiResponse<string>.Failure(ex.Message, "Unauthorized"));
             }
         }
@@ -187,7 +169,7 @@ namespace PaperaX.Api.Controllers
                 await _authService.LogoutAsync(refreshToken);
             }
 
-            Response.Cookies.Append("refresh_token", "", GetRefreshTokenCookieOptions(expired: true));
+            CookieHelper.DeleteRefreshTokenCookie(Response.HttpContext, _env);
             return Ok(ApiResponse<string>.Success(null, "Logged out successfully"));
         }
     }
